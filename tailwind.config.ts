@@ -82,6 +82,14 @@ export default {
         elevated: "0 2px 8px hsl(var(--foreground) / 0.08)",
       },
       keyframes: {
+        "radar-sweep": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "scan-lines": {
+          "0%": { transform: "translateY(0%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -114,6 +122,8 @@ export default {
         "fade-in": "fade-in 0.3s ease-out",
         "slide-up": "slide-up 0.4s ease-out",
         "trajectory": "trajectory 2s ease-out forwards",
+        "radar-sweep": "radar-sweep 4s linear infinite",
+        "scan-lines": "scan-lines 3s linear infinite",
       },
     },
   },
