@@ -67,8 +67,8 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
         </div>
 
         {/* Center Panel - Orbital Visualization */}
-        <div className="p-4 overflow-hidden flex flex-col">
-          <div className="flex-1 min-h-[500px]">
+        <div className="p-3 overflow-hidden flex flex-col">
+          <div className="flex-1 min-h-0">
             <OrbitalVisualization
               selectedAsteroid={selectedAsteroid}
               onSelectAsteroid={setSelectedAsteroid}
