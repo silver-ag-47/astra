@@ -416,6 +416,34 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </g>
       </svg>
 
+      {/* Orbital Periods Panel */}
+      <div className="absolute bottom-4 right-4 border border-white/20 bg-black/80 p-3 z-10">
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Orbital Periods</p>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#a1a1aa' }} />
+              <span className="text-[10px] text-gray-400">Mercury</span>
+            </div>
+            <span className="text-[10px] text-accent-cyan font-mono">88d <span className="text-gray-500">(4.15×)</span></span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#fcd34d' }} />
+              <span className="text-[10px] text-gray-400">Venus</span>
+            </div>
+            <span className="text-[10px] text-accent-cyan font-mono">225d <span className="text-gray-500">(1.62×)</span></span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-accent-cyan" />
+              <span className="text-[10px] text-gray-400">Earth</span>
+            </div>
+            <span className="text-[10px] text-accent-cyan font-mono">365d <span className="text-gray-500">(1.0×)</span></span>
+          </div>
+        </div>
+      </div>
+
       {/* Legend */}
       <div className="absolute bottom-4 left-4 border border-white/20 bg-black/80 p-3">
         <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Threat Level</p>
