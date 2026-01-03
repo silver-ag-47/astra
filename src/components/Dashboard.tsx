@@ -56,6 +56,10 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
                 key={asteroid.id}
                 asteroid={asteroid}
                 onClick={() => handleAsteroidClick(asteroid)}
+                onViewThreat={() => {
+                  setSelectedAsteroid(asteroid);
+                  setShowThreatModal(true);
+                }}
                 isSelected={selectedAsteroid?.id === asteroid.id}
               />
             ))}
