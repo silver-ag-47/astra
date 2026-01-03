@@ -25,8 +25,21 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const [zoom, setZoom] = useState(1);
   const stars = useMemo(() => generateStars(150), []);
 
-  const minZoom = 0.5;
-  const maxZoom = 3;
+  const minZoom = 0.3;
+  const maxZoom = 4;
+
+  // Dynamic distance scale based on zoom
+  const getScaleDistance = () => {
+    const baseScale = 1 / zoom;
+    if (baseScale >= 2) return { distance: 2, label: '2 AU' };
+    if (baseScale >= 1) return { distance: 1, label: '1 AU' };
+    if (baseScale >= 0.5) return { distance: 0.5, label: '0.5 AU' };
+    if (baseScale >= 0.25) return { distance: 0.25, label: '0.25 AU' };
+    return { distance: 0.1, label: '0.1 AU' };
+  };
+
+  const scaleInfo = getScaleDistance();
+  const scaleBarWidth = 50 * zoom * scaleInfo.distance;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -143,27 +156,42 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </defs>
         <rect x="-200" y="-200" width="800" height="800" fill="url(#spaceGrid)" />
 
-        {/* Sun (positioned at edge to show solar system context) */}
+        {/* Sun (center of solar system) */}
         <g>
-          <circle cx="-50" cy="200" r="80" fill="url(#sunGlow)" />
-          <circle cx="-50" cy="200" r="25" fill="#fbbf24" stroke="hsl(var(--accent-amber))" strokeWidth="2"/>
+          <circle cx="50" cy="200" r="100" fill="url(#sunGlow)" />
+          <circle cx="50" cy="200" r="35" fill="#fbbf24" stroke="hsl(var(--accent-amber))" strokeWidth="2"/>
+          {/* Sun corona effect */}
+          <circle cx="50" cy="200" r="45" fill="none" stroke="hsl(var(--accent-amber))" strokeWidth="1" opacity="0.3"/>
+          <circle cx="50" cy="200" r="55" fill="none" stroke="hsl(var(--accent-amber))" strokeWidth="0.5" opacity="0.2"/>
           {/* Sun rays */}
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => (
             <line
               key={angle}
-              x1={-50 + Math.cos((angle * Math.PI) / 180) * 30}
-              y1={200 + Math.sin((angle * Math.PI) / 180) * 30}
-              x2={-50 + Math.cos((angle * Math.PI) / 180) * 45}
-              y2={200 + Math.sin((angle * Math.PI) / 180) * 45}
+              x1={50 + Math.cos((angle * Math.PI) / 180) * 40}
+              y1={200 + Math.sin((angle * Math.PI) / 180) * 40}
+              x2={50 + Math.cos((angle * Math.PI) / 180) * 60}
+              y2={200 + Math.sin((angle * Math.PI) / 180) * 60}
               stroke="hsl(var(--accent-amber))"
-              strokeWidth="2"
-              opacity="0.6"
+              strokeWidth="1.5"
+              opacity="0.5"
             />
           ))}
-          <text x="-50" y="240" textAnchor="middle" fill="hsl(var(--accent-amber))" fontSize="8" fontFamily="IBM Plex Mono">
+          <text x="50" y="250" textAnchor="middle" fill="hsl(var(--accent-amber))" fontSize="8" fontFamily="IBM Plex Mono">
             SUN
           </text>
         </g>
+
+        {/* Earth's orbital path around the Sun */}
+        <circle 
+          cx="50" 
+          cy="200" 
+          r="150" 
+          fill="none" 
+          stroke="hsl(var(--accent-cyan))" 
+          strokeWidth="0.5" 
+          strokeDasharray="4 8"
+          opacity="0.3"
+        />
 
         {/* Orbital Paths */}
         {asteroids.map((asteroid, index) => (
@@ -312,13 +340,16 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           );
         })}
 
-        {/* Scale indicator */}
-        <g transform="translate(320, 370)">
-          <line x1="0" y1="0" x2="50" y2="0" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
-          <line x1="0" y1="-3" x2="0" y2="3" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
-          <line x1="50" y1="-3" x2="50" y2="3" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
-          <text x="25" y="12" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="IBM Plex Mono">
-            1 AU
+        {/* Dynamic Scale indicator */}
+        <g transform={`translate(${viewBoxOffset + viewBoxSize - 80}, ${viewBoxOffset + viewBoxSize - 30})`}>
+          <line x1="0" y1="0" x2={scaleBarWidth} y2="0" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
+          <line x1="0" y1="-4" x2="0" y2="4" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
+          <line x1={scaleBarWidth} y1="-4" x2={scaleBarWidth} y2="4" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
+          <text x={scaleBarWidth / 2} y="14" textAnchor="middle" fill="hsl(var(--accent-cyan))" fontSize="8" fontFamily="IBM Plex Mono">
+            {scaleInfo.label}
+          </text>
+          <text x={scaleBarWidth / 2} y="-8" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="6" fontFamily="IBM Plex Mono">
+            SCALE
           </text>
         </g>
       </svg>
