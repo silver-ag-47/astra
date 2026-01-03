@@ -1,12 +1,14 @@
 import { Asteroid, calculateImpactEnergy } from '@/data/asteroids';
+import { AlertTriangle } from 'lucide-react';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
   onClick: () => void;
+  onViewThreat: () => void;
   isSelected: boolean;
 }
 
-const AsteroidCard = ({ asteroid, onClick, isSelected }: AsteroidCardProps) => {
+const AsteroidCard = ({ asteroid, onClick, onViewThreat, isSelected }: AsteroidCardProps) => {
   const impactEnergy = calculateImpactEnergy(asteroid.mass, asteroid.velocity);
   
   const getTorinoClass = (scale: number) => {
@@ -106,6 +108,18 @@ const AsteroidCard = ({ asteroid, onClick, isSelected }: AsteroidCardProps) => {
           {impactEnergy.toFixed(2)} MT
         </span>
       </div>
+
+      {/* View Threat Assessment Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewThreat();
+        }}
+        className="w-full mt-3 pt-3 border-t border-border flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors group"
+      >
+        <AlertTriangle size={12} className="group-hover:text-accent-amber transition-colors" />
+        <span className="tracking-wider">VIEW THREAT ASSESSMENT</span>
+      </button>
     </button>
   );
 };
