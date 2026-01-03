@@ -90,6 +90,12 @@ export default {
           "0%": { transform: "translateY(0%)" },
           "100%": { transform: "translateY(100%)" },
         },
+        "float-particle": {
+          "0%, 100%": { transform: "translateY(0) translateX(0)", opacity: "0.2" },
+          "25%": { transform: "translateY(-20px) translateX(10px)", opacity: "0.5" },
+          "50%": { transform: "translateY(-10px) translateX(-5px)", opacity: "0.3" },
+          "75%": { transform: "translateY(-30px) translateX(15px)", opacity: "0.4" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -124,6 +130,7 @@ export default {
         "trajectory": "trajectory 2s ease-out forwards",
         "radar-sweep": "radar-sweep 4s linear infinite",
         "scan-lines": "scan-lines 3s linear infinite",
+        "float-particle": "float-particle 20s ease-in-out infinite",
       },
     },
   },

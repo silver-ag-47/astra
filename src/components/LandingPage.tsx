@@ -1,11 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface LandingPageProps {
   onEnter: () => void;
 }
 
+// Generate random particles
+const generateParticles = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    opacity: Math.random() * 0.5 + 0.1,
+    duration: Math.random() * 20 + 15,
+    delay: Math.random() * 10,
+  }));
+};
+
 const LandingPage = ({ onEnter }: LandingPageProps) => {
   const [showContent, setShowContent] = useState(false);
+  const particles = useMemo(() => generateParticles(40), []);
 
   useEffect(() => {
     setTimeout(() => setShowContent(true), 100);
@@ -15,6 +29,25 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Dot Grid Background */}
       <div className="absolute inset-0 dot-grid pointer-events-none" />
+      
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute rounded-full bg-accent-cyan animate-float-particle"
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              opacity: particle.opacity,
+              animationDuration: `${particle.duration}s`,
+              animationDelay: `${particle.delay}s`,
+            }}
+          />
+        ))}
+      </div>
       
       {/* Concentric Circles - Blueprint Style with Radar Sweep */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
