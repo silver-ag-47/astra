@@ -1,4 +1,4 @@
-import { Asteroid, calculateImpactEnergy, getTorinoDescription } from '@/data/asteroids';
+import { Asteroid, calculateImpactEnergy } from '@/data/asteroids';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
@@ -10,11 +10,11 @@ const AsteroidCard = ({ asteroid, onClick, isSelected }: AsteroidCardProps) => {
   const impactEnergy = calculateImpactEnergy(asteroid.mass, asteroid.velocity);
   
   const getTorinoClass = (scale: number) => {
-    if (scale === 0) return 'bg-secondary';
-    if (scale <= 1) return 'bg-terminal/80';
-    if (scale <= 4) return 'bg-accent';
-    if (scale <= 7) return 'bg-orange-500';
-    return 'bg-primary';
+    if (scale === 0) return 'torino-0';
+    if (scale <= 1) return 'torino-1';
+    if (scale <= 4) return 'torino-2';
+    if (scale <= 7) return 'torino-5';
+    return 'torino-8';
   };
 
   const formatDate = (dateStr: string) => {
@@ -35,76 +35,76 @@ const AsteroidCard = ({ asteroid, onClick, isSelected }: AsteroidCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left transition-all duration-150 ${
-        isSelected 
-          ? 'brutalist-panel-red translate-x-2' 
-          : 'brutalist-panel hover:-translate-y-1 hover:translate-x-1'
-      }`}
+      className={`w-full text-left card-interactive p-4 ${isSelected ? 'selected' : ''}`}
     >
-      <div className="p-4">
-        {/* Header with Name and Torino Badge */}
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h3 className="font-display text-xl tracking-wide text-foreground">
-              {asteroid.name}
-            </h3>
-            <p className="text-[10px] text-muted-foreground font-mono">
-              {asteroid.designation}
-            </p>
-          </div>
-          <div className={`${getTorinoClass(asteroid.torinoScale)} px-2 py-1 border-2 border-foreground`}>
-            <span className="font-display text-lg text-foreground">{asteroid.torinoScale}</span>
-          </div>
+      {/* Header with Name and Torino Badge */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="font-display text-lg text-foreground">
+            {asteroid.name}
+          </h3>
+          <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+            {asteroid.designation}
+          </p>
         </div>
+        <div className={`${getTorinoClass(asteroid.torinoScale)} px-2 py-0.5 border border-current`}>
+          <span className="font-mono text-xs">{asteroid.torinoScale}</span>
+        </div>
+      </div>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-muted p-2 border border-border">
-            <p className="text-[9px] text-muted-foreground tracking-wider">DIAMETER</p>
-            <p className="font-mono text-sm text-foreground">{asteroid.diameter}m</p>
-          </div>
-          <div className="bg-muted p-2 border border-border">
-            <p className="text-[9px] text-muted-foreground tracking-wider">VELOCITY</p>
-            <p className="font-mono text-sm text-foreground">{asteroid.velocity} km/s</p>
-          </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <p className="data-label">Diameter</p>
+          <p className="data-value">{asteroid.diameter}m</p>
         </div>
+        <div>
+          <p className="data-label">Velocity</p>
+          <p className="data-value">{asteroid.velocity} km/s</p>
+        </div>
+      </div>
 
-        {/* Impact Probability Bar */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[9px] text-muted-foreground tracking-wider">IMPACT PROBABILITY</span>
-            <span className="font-mono text-xs text-primary">
-              {(asteroid.impactProbability * 100).toFixed(4)}%
-            </span>
-          </div>
-          <div className="progress-brutal">
-            <div 
-              className="progress-brutal-fill bg-primary"
-              style={{ width: `${Math.min(asteroid.impactProbability * 1000, 100)}%` }}
-            />
-          </div>
+      {/* Impact Probability */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="data-label">Impact Probability</span>
+          <span className="font-mono text-xs text-foreground">
+            {(asteroid.impactProbability * 100).toFixed(4)}%
+          </span>
         </div>
+        <div className="progress-artifact">
+          <div 
+            className="progress-artifact-fill"
+            style={{ width: `${Math.min(asteroid.impactProbability * 1000, 100)}%` }}
+          />
+        </div>
+      </div>
 
-        {/* Approach Date */}
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-muted-foreground font-serif">Close Approach:</span>
-          <div className="text-right">
-            <span className="font-mono text-foreground">{formatDate(asteroid.closeApproachDate)}</span>
-            <span className={`block text-[10px] ${daysUntil < 365 ? 'text-primary' : daysUntil < 3650 ? 'text-accent' : 'text-terminal'}`}>
-              {daysUntil > 0 ? `T-${daysUntil.toLocaleString()} days` : 'PASSED'}
-            </span>
-          </div>
+      {/* Approach Date */}
+      <div className="flex justify-between items-center text-xs border-t border-border pt-3">
+        <span className="text-muted-foreground">Close Approach</span>
+        <div className="text-right">
+          <span className="font-mono text-foreground">{formatDate(asteroid.closeApproachDate)}</span>
+          <span className={`block text-[10px] ${
+            daysUntil < 365 ? 'danger-indicator' : 
+            daysUntil < 3650 ? 'warning-indicator' : 
+            'success-indicator'
+          }`}>
+            {daysUntil > 0 ? `T-${daysUntil.toLocaleString()} days` : 'PASSED'}
+          </span>
         </div>
+      </div>
 
-        {/* Impact Energy Indicator */}
-        <div className="mt-3 pt-3 border-t border-border">
-          <div className="flex justify-between items-center">
-            <span className="text-[9px] text-muted-foreground tracking-wider">EST. IMPACT ENERGY</span>
-            <span className={`font-mono text-sm ${impactEnergy > 100 ? 'text-primary' : impactEnergy > 1 ? 'text-accent' : 'text-terminal'}`}>
-              {impactEnergy.toFixed(2)} MT
-            </span>
-          </div>
-        </div>
+      {/* Impact Energy */}
+      <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
+        <span className="data-label">Est. Impact Energy</span>
+        <span className={`font-mono text-sm ${
+          impactEnergy > 100 ? 'danger-indicator' : 
+          impactEnergy > 1 ? 'warning-indicator' : 
+          'success-indicator'
+        }`}>
+          {impactEnergy.toFixed(2)} MT
+        </span>
       </div>
     </button>
   );

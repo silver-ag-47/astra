@@ -28,7 +28,7 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
     setPhaseProgress(0);
     setLogs([]);
     setDeflectionProgress(0);
-    addLog('MISSION SIMULATION INITIATED');
+    addLog('Mission simulation initiated');
     addLog(`Target: ${asteroid.name} (${asteroid.designation})`);
     addLog(`Defense Strategy: ${strategy.name}`);
   };
@@ -42,27 +42,24 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
           if (currentPhase < phases.length - 1) {
             setCurrentPhase(curr => curr + 1);
             const phase = phases[currentPhase + 1];
-            addLog(`PHASE ${currentPhase + 2}: ${phase.name} - ${phase.description}`);
+            addLog(`Phase ${currentPhase + 2}: ${phase.name} - ${phase.description}`);
             
-            // Add random agency logs
             const agency = spaceAgencies[Math.floor(Math.random() * spaceAgencies.length)];
             setTimeout(() => addLog(`${agency.code} confirms systems nominal`), 500);
             
             return 0;
           } else {
-            // Simulation complete
             setIsRunning(false);
             const success = Math.random() < strategy.successRate;
             const deflection = success ? (Math.random() * 50 + 50) : (Math.random() * 30);
             setDeflectionProgress(deflection);
-            addLog(success ? 'DEFLECTION SUCCESSFUL' : 'DEFLECTION PARTIAL - MONITORING REQUIRED');
+            addLog(success ? 'Deflection successful' : 'Deflection partial - monitoring required');
             addLog(`Trajectory altered by ${deflection.toFixed(2)}%`);
             setTimeout(() => onComplete(success, deflection), 2000);
             return 100;
           }
         }
         
-        // Increase deflection progress during final phase
         if (currentPhase === phases.length - 1) {
           setDeflectionProgress(prev + 2);
         }
@@ -76,25 +73,25 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
 
   useEffect(() => {
     if (currentPhase === 0 && phaseProgress === 0 && isRunning) {
-      addLog(`PHASE 1: ${phases[0].name} - ${phases[0].description}`);
+      addLog(`Phase 1: ${phases[0].name} - ${phases[0].description}`);
     }
   }, [isRunning, currentPhase, phaseProgress, phases]);
 
   return (
-    <div className="min-h-screen bg-background grid-bg">
+    <div className="min-h-screen bg-background dot-grid">
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
-        <div className="brutalist-panel p-4 mb-6">
+        <div className="artifact-panel p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-primary tracking-widest mb-1">▲ ACTIVE MISSION ▲</p>
-              <h1 className="font-display text-3xl text-foreground tracking-wide">
-                OPERATION: {asteroid.name.toUpperCase()} INTERCEPT
+              <p className="data-label mb-1">Active Mission</p>
+              <h1 className="font-display text-3xl text-foreground">
+                Operation: {asteroid.name} Intercept
               </h1>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-muted-foreground tracking-widest">DEFENSE PROTOCOL</p>
-              <p className="font-display text-xl text-primary">{strategy.code}</p>
+              <p className="data-label">Defense Protocol</p>
+              <p className="font-mono text-lg text-foreground">{strategy.code}</p>
             </div>
           </div>
         </div>
@@ -102,9 +99,9 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Mission Timeline */}
           <div className="lg:col-span-2">
-            <div className="brutalist-panel p-6">
-              <h2 className="font-display text-lg tracking-widest text-foreground mb-6">
-                MISSION TIMELINE
+            <div className="artifact-panel p-6">
+              <h2 className="font-display text-lg text-foreground mb-6">
+                Mission Timeline
               </h2>
               
               {/* Phase Progress */}
@@ -117,41 +114,41 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
                   return (
                     <div 
                       key={phase.id}
-                      className={`p-4 border-2 transition-all ${
-                        isActive ? 'border-primary bg-primary/10' :
-                        isComplete ? 'border-terminal bg-terminal/10' :
-                        'border-border bg-muted'
+                      className={`p-4 border transition-all ${
+                        isActive ? 'border-foreground bg-accent/30' :
+                        isComplete ? 'border-border bg-accent/10' :
+                        'border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
-                          <div className={`status-diamond ${
-                            isActive ? 'bg-primary animate-blink' :
-                            isComplete ? 'bg-terminal' :
-                            'bg-muted-foreground'
+                          <div className={`status-dot ${
+                            isActive ? 'bg-foreground status-dot-pulse' :
+                            isComplete ? 'bg-foreground' :
+                            'bg-border'
                           }`} />
-                          <span className="font-display text-lg tracking-wide text-foreground">
+                          <span className="font-display text-base text-foreground">
                             {phase.name}
                           </span>
                         </div>
-                        <span className="font-mono text-sm text-muted-foreground">
+                        <span className="font-mono text-xs text-muted-foreground">
                           {phase.duration}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground font-serif mb-2">
+                      <p className="text-sm text-muted-foreground mb-2 ml-5">
                         {phase.description}
                       </p>
                       {isActive && (
-                        <div className="progress-brutal">
+                        <div className="progress-artifact ml-5">
                           <div 
-                            className="progress-brutal-fill bg-primary"
+                            className="progress-artifact-fill"
                             style={{ width: `${phaseProgress}%` }}
                           />
                         </div>
                       )}
                       {isComplete && (
-                        <div className="text-xs text-terminal font-mono">
-                          ✓ PHASE COMPLETE
+                        <div className="text-xs text-muted-foreground font-mono ml-5">
+                          ✓ Complete
                         </div>
                       )}
                     </div>
@@ -163,18 +160,18 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
               {!isRunning && currentPhase === 0 && phaseProgress === 0 && (
                 <button
                   onClick={startSimulation}
-                  className="btn-brutal-primary w-full py-4"
+                  className="btn-artifact-primary w-full py-4"
                 >
-                  <span className="text-xl">▶ BEGIN SIMULATION</span>
+                  Begin Simulation →
                 </button>
               )}
               
               {!isRunning && currentPhase === 0 && phaseProgress === 0 && (
                 <button
                   onClick={onBack}
-                  className="btn-brutal w-full py-3 mt-4"
+                  className="btn-artifact w-full py-3 mt-4"
                 >
-                  CHANGE STRATEGY
+                  Change Strategy
                 </button>
               )}
             </div>
@@ -183,44 +180,44 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
           {/* Side Panel */}
           <div className="space-y-6">
             {/* Deflection Meter */}
-            <div className="brutalist-panel-red p-4">
-              <h3 className="font-display text-sm tracking-widest text-foreground mb-4">
-                TRAJECTORY DEFLECTION
+            <div className="artifact-panel p-4">
+              <h3 className="font-display text-sm text-foreground mb-4">
+                Trajectory Deflection
               </h3>
-              <div className="relative h-40 border-2 border-border bg-muted overflow-hidden">
+              <div className="relative h-40 border border-border bg-accent/10 overflow-hidden">
                 <div 
-                  className="absolute bottom-0 left-0 right-0 bg-terminal transition-all duration-300"
+                  className="absolute bottom-0 left-0 right-0 bg-foreground transition-all duration-300"
                   style={{ height: `${Math.min(deflectionProgress, 100)}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-mono text-3xl text-foreground drop-shadow-lg">
+                  <span className="font-mono text-3xl text-foreground mix-blend-difference">
                     {deflectionProgress.toFixed(1)}%
                   </span>
                 </div>
                 {/* Target line */}
                 <div 
-                  className="absolute left-0 right-0 h-0.5 bg-primary"
+                  className="absolute left-0 right-0 h-px bg-foreground opacity-50"
                   style={{ bottom: '50%' }}
                 />
-                <span className="absolute right-2 text-[9px] text-primary" style={{ bottom: '48%' }}>
-                  TARGET
+                <span className="absolute right-2 text-[9px] text-muted-foreground" style={{ bottom: '48%' }}>
+                  Target
                 </span>
               </div>
             </div>
 
             {/* Mission Log */}
-            <div className="brutalist-panel p-4">
-              <h3 className="font-display text-sm tracking-widest text-foreground mb-3">
-                MISSION LOG
+            <div className="artifact-panel p-4">
+              <h3 className="font-display text-sm text-foreground mb-3">
+                Mission Log
               </h3>
-              <div className="h-60 overflow-y-auto bg-background border-2 border-border p-2 font-mono text-xs">
+              <div className="h-60 overflow-y-auto border border-border p-3 font-mono text-[11px]">
                 {logs.map((log, i) => (
                   <div 
                     key={i} 
                     className={`py-1 ${
-                      log.includes('SUCCESSFUL') ? 'text-terminal' :
-                      log.includes('PARTIAL') ? 'text-accent' :
-                      log.includes('PHASE') ? 'text-primary' :
+                      log.includes('successful') ? 'text-foreground' :
+                      log.includes('partial') ? 'warning-indicator' :
+                      log.includes('Phase') ? 'text-foreground' :
                       'text-muted-foreground'
                     }`}
                   >
@@ -228,23 +225,23 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
                   </div>
                 ))}
                 {isRunning && (
-                  <div className="text-primary animate-blink">▌</div>
+                  <div className="text-foreground animate-pulse">▌</div>
                 )}
               </div>
             </div>
 
             {/* Agency Status */}
-            <div className="brutalist-panel p-4">
-              <h3 className="font-display text-sm tracking-widest text-foreground mb-3">
-                COALITION STATUS
+            <div className="artifact-panel p-4">
+              <h3 className="font-display text-sm text-foreground mb-3">
+                Coalition Status
               </h3>
               <div className="space-y-2">
                 {spaceAgencies.slice(0, 3).map((agency) => (
                   <div key={agency.id} className="flex items-center justify-between">
                     <span className="font-mono text-xs text-foreground">{agency.code}</span>
                     <div className="flex items-center gap-2">
-                      <div className={`status-diamond bg-terminal ${isRunning ? 'animate-blink' : ''}`} />
-                      <span className="text-[10px] text-terminal">ACTIVE</span>
+                      <div className={`status-dot bg-foreground ${isRunning ? 'status-dot-pulse' : ''}`} />
+                      <span className="text-[10px] text-muted-foreground">Active</span>
                     </div>
                   </div>
                 ))}

@@ -35,22 +35,22 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
 
   return (
     <div className="min-h-[calc(100vh-60px)] bg-background">
-      <div className="grid lg:grid-cols-[350px_1fr_350px] h-full">
+      <div className="grid lg:grid-cols-[320px_1fr_320px] h-full">
         {/* Left Panel - Threats List */}
-        <div className="border-r-[3px] border-border bg-card overflow-hidden flex flex-col">
-          <div className="p-4 border-b-[3px] border-border bg-muted sticky top-0 z-10">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="font-display text-lg tracking-[0.15em] text-foreground">
-                ACTIVE THREATS
+        <div className="border-r border-border bg-background overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-border sticky top-0 z-10 bg-background">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="font-display text-lg text-foreground">
+                Active Threats
               </h2>
-              <div className="status-diamond bg-primary animate-blink" />
+              <div className="status-dot bg-foreground status-dot-pulse" />
             </div>
             <p className="text-[10px] text-muted-foreground tracking-wider">
-              {asteroids.length} NEAR-EARTH OBJECTS TRACKED
+              {asteroids.length} Near-Earth Objects Tracked
             </p>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {sortedAsteroids.map((asteroid) => (
               <AsteroidCard
                 key={asteroid.id}
@@ -73,17 +73,17 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
           
           {/* Quick Action Bar */}
           {selectedAsteroid && (
-            <div className="mt-4 brutalist-panel p-4 animate-slide-up">
+            <div className="mt-4 artifact-panel p-4 animate-fade-in">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div>
-                  <p className="text-[10px] text-muted-foreground tracking-widest">SELECTED TARGET</p>
-                  <p className="font-display text-xl text-primary">{selectedAsteroid.name}</p>
+                  <p className="data-label">Selected Target</p>
+                  <p className="font-display text-xl text-foreground">{selectedAsteroid.name}</p>
                 </div>
                 <button
                   onClick={handleViewThreat}
-                  className="btn-brutal px-6 py-3"
+                  className="btn-artifact px-6 py-2"
                 >
-                  VIEW THREAT ASSESSMENT
+                  View Threat Assessment →
                 </button>
               </div>
             </div>
@@ -91,7 +91,7 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
         </div>
 
         {/* Right Panel - Mission Control */}
-        <div className="border-l-[3px] border-border bg-card p-4 overflow-y-auto">
+        <div className="border-l border-border bg-background p-4 overflow-y-auto">
           <MissionControlPanel
             selectedAsteroid={selectedAsteroid}
             onLaunchMission={handleViewThreat}
