@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Asteroid, DefenseStrategy, getMissionPhases, spaceAgencies } from '@/data/asteroids';
 
 interface MissionSimulationProps {
@@ -14,6 +14,8 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [deflectionProgress, setDeflectionProgress] = useState(0);
+  const [showCompletionEffect, setShowCompletionEffect] = useState(false);
+  const [missionSuccess, setMissionSuccess] = useState<boolean | null>(null);
 
   const phases = getMissionPhases();
 
@@ -34,17 +36,102 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
     setCurrentPhase(phases.length - 1);
     setPhaseProgress(100);
     setDeflectionProgress(deflection);
+    setMissionSuccess(success);
     
     // Only show key updates in log
     addLog(success ? 'MISSION SUCCESS: Deflection confirmed' : 'PARTIAL SUCCESS: Monitoring required');
     addLog(`Trajectory altered by ${deflection.toFixed(2)}%`);
     
     setIsRunning(false);
-    setTimeout(() => onComplete(success, deflection), 500);
+    
+    // Trigger completion effect
+    setShowCompletionEffect(true);
+    setTimeout(() => {
+      setShowCompletionEffect(false);
+      onComplete(success, deflection);
+    }, 1200);
   };
 
   return (
-    <div className="min-h-screen bg-background dot-grid">
+    <div className="min-h-screen bg-background dot-grid relative overflow-hidden">
+      {/* Completion Flash Effect */}
+      {showCompletionEffect && (
+        <>
+          {/* Screen flash overlay */}
+          <div 
+            className={`fixed inset-0 z-50 pointer-events-none animate-[flash_0.8s_ease-out_forwards] ${
+              missionSuccess ? 'bg-green-500' : 'bg-amber-500'
+            }`}
+            style={{
+              animation: 'flash 0.8s ease-out forwards'
+            }}
+          />
+          
+          {/* Radial pulse rings */}
+          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <div 
+              className={`absolute w-24 h-24 rounded-full border-4 ${
+                missionSuccess ? 'border-green-400' : 'border-amber-400'
+              }`}
+              style={{
+                animation: 'pulseRing 1s ease-out forwards'
+              }}
+            />
+            <div 
+              className={`absolute w-24 h-24 rounded-full border-4 ${
+                missionSuccess ? 'border-green-400' : 'border-amber-400'
+              }`}
+              style={{
+                animation: 'pulseRing 1s ease-out 0.2s forwards'
+              }}
+            />
+            <div 
+              className={`absolute w-24 h-24 rounded-full border-4 ${
+                missionSuccess ? 'border-green-400' : 'border-amber-400'
+              }`}
+              style={{
+                animation: 'pulseRing 1s ease-out 0.4s forwards'
+              }}
+            />
+          </div>
+
+          {/* Success/Partial text burst */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+            <div 
+              className={`font-display text-4xl md:text-6xl font-bold tracking-wider ${
+                missionSuccess ? 'text-green-400' : 'text-amber-400'
+              }`}
+              style={{
+                animation: 'textBurst 1.2s ease-out forwards',
+                textShadow: missionSuccess 
+                  ? '0 0 20px rgba(74, 222, 128, 0.8), 0 0 40px rgba(74, 222, 128, 0.5)' 
+                  : '0 0 20px rgba(251, 191, 36, 0.8), 0 0 40px rgba(251, 191, 36, 0.5)'
+              }}
+            >
+              {missionSuccess ? 'SUCCESS' : 'PARTIAL'}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Inline styles for animations */}
+      <style>{`
+        @keyframes flash {
+          0% { opacity: 0.6; }
+          100% { opacity: 0; }
+        }
+        @keyframes pulseRing {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(15); opacity: 0; }
+        }
+        @keyframes textBurst {
+          0% { transform: scale(0.5); opacity: 0; }
+          30% { transform: scale(1.2); opacity: 1; }
+          70% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+      `}</style>
+
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="artifact-panel p-6 mb-6">
