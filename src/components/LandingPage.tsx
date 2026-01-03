@@ -14,7 +14,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Dot Grid Background */}
-      <div className="absolute inset-0 dot-grid" />
+      <div className="absolute inset-0 dot-grid pointer-events-none" />
       
       {/* Concentric Circles - Blueprint Style */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-30">
