@@ -16,18 +16,47 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
       {/* Dot Grid Background */}
       <div className="absolute inset-0 dot-grid pointer-events-none" />
       
-      {/* Concentric Circles - Blueprint Style */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-30">
+      {/* Concentric Circles - Blueprint Style with Radar Sweep */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
+        {/* Concentric circles */}
         {[1, 2, 3, 4, 5].map((i) => (
           <div 
             key={i}
-            className="absolute inset-0 border border-border"
+            className="absolute inset-0 border border-border opacity-30"
             style={{
               transform: `scale(${i * 0.2})`,
               borderRadius: '50%',
             }}
           />
         ))}
+        
+        {/* Radar sweep effect */}
+        <div className="absolute inset-0 animate-radar-sweep">
+          <div 
+            className="absolute top-1/2 left-1/2 w-1/2 h-[2px] origin-left"
+            style={{
+              background: 'linear-gradient(90deg, hsl(var(--accent-cyan)) 0%, transparent 100%)',
+              boxShadow: '0 0 20px hsl(var(--accent-cyan) / 0.5)',
+            }}
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 w-1/2 h-full origin-left -translate-y-1/2"
+            style={{
+              background: 'conic-gradient(from -90deg, transparent 0deg, hsl(var(--accent-cyan) / 0.15) 30deg, transparent 60deg)',
+              clipPath: 'polygon(0 50%, 100% 0, 100% 100%)',
+            }}
+          />
+        </div>
+        
+        {/* Scan line effect */}
+        <div className="absolute inset-0 overflow-hidden rounded-full opacity-20">
+          <div className="absolute inset-0 animate-scan-lines" 
+            style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--accent-green) / 0.3) 2px, hsl(var(--accent-green) / 0.3) 4px)',
+              backgroundSize: '100% 8px',
+            }}
+          />
+        </div>
       </div>
 
       {/* Content */}
