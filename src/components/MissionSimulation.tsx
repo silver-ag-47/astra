@@ -55,18 +55,18 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
             setDeflectionProgress(deflection);
             addLog(success ? 'Deflection successful' : 'Deflection partial - monitoring required');
             addLog(`Trajectory altered by ${deflection.toFixed(2)}%`);
-            setTimeout(() => onComplete(success, deflection), 2000);
+            setTimeout(() => onComplete(success, deflection), 1000);
             return 100;
           }
         }
         
         if (currentPhase === phases.length - 1) {
-          setDeflectionProgress(prev + 2);
+          setDeflectionProgress(prev + 5);
         }
         
-        return prev + 2;
+        return prev + 5;
       });
-    }, 100);
+    }, 50);
 
     return () => clearInterval(progressInterval);
   }, [isRunning, currentPhase, phases, strategy, asteroid, onComplete]);
