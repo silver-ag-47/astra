@@ -23,13 +23,13 @@ const generateStars = (count: number) => {
 const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVisualizationProps) => {
   const [rotation, setRotation] = useState(0);
   const [hoveredAsteroid, setHoveredAsteroid] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.6);
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const stars = useMemo(() => generateStars(150), []);
 
-  const minZoom = 0.3;
-  const maxZoom = 4;
+  const minZoom = 0.25;
+  const maxZoom = 3;
 
   // Dynamic distance scale based on zoom
   const getScaleDistance = () => {
@@ -90,73 +90,72 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const viewBoxOffset = (400 - viewBoxSize) / 2;
 
   return (
-    <div className="relative w-full h-full min-h-[400px] overflow-hidden bg-[#050505] border border-border">
+    <div className="relative w-full h-full min-h-[300px] overflow-hidden bg-[#050505] border border-border">
       {/* Title */}
-      <div className="absolute top-4 left-4 z-10">
-        <h2 className="font-display text-lg text-white">
+      <div className="absolute top-2 left-2 z-10">
+        <h2 className="font-display text-sm text-white">
           Orbital Tracking
         </h2>
-        <p className="text-[10px] text-gray-400 tracking-wider">
-          Near-Earth Object Monitor
+        <p className="text-[9px] text-gray-400 tracking-wider">
+          NEO Monitor
         </p>
       </div>
 
       {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-1">
+      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
         <Button
           variant="outline"
           size="icon"
           onClick={handleZoomIn}
           disabled={zoom >= maxZoom}
-          className="w-8 h-8 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
         >
-          <ZoomIn className="h-4 w-4 text-white" />
+          <ZoomIn className="h-3 w-3 text-white" />
         </Button>
         <Button
           variant="outline"
           size="icon"
           onClick={handleZoomOut}
           disabled={zoom <= minZoom}
-          className="w-8 h-8 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
         >
-          <ZoomOut className="h-4 w-4 text-white" />
+          <ZoomOut className="h-3 w-3 text-white" />
         </Button>
-        <div className="text-center text-[10px] text-gray-400 mt-1">
+        <div className="text-center text-[8px] text-gray-400 mt-0.5">
           {Math.round(zoom * 100)}%
         </div>
       </div>
 
-      {/* Time Controls */}
-      <div className="absolute top-16 left-4 z-10 border border-white/20 bg-black/80 p-3">
-        <div className="flex items-center gap-2 mb-2">
+      {/* Time Controls - Compact */}
+      <div className="absolute top-12 left-2 z-10 border border-white/20 bg-black/80 p-2">
+        <div className="flex items-center gap-1.5 mb-1.5">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setIsPaused(!isPaused)}
-            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+            className="w-5 h-5 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
           >
             {isPaused ? (
-              <Play className="h-3 w-3 text-accent-green" />
+              <Play className="h-2.5 w-2.5 text-accent-green" />
             ) : (
-              <Pause className="h-3 w-3 text-accent-amber" />
+              <Pause className="h-2.5 w-2.5 text-accent-amber" />
             )}
           </Button>
-          <FastForward className="h-3 w-3 text-gray-500" />
-          <span className="text-[10px] text-accent-cyan font-mono min-w-[50px]">
+          <span className="text-[9px] text-accent-cyan font-mono">
             {getSpeedLabel()}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[8px] text-gray-500">SLOW</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[7px] text-gray-500">S</span>
           <Slider
             value={[timeSpeed]}
             onValueChange={(value) => setTimeSpeed(value[0])}
             min={0.25}
             max={4}
             step={0.25}
-            className="w-20"
+            className="w-14"
           />
-          <span className="text-[8px] text-gray-500">FAST</span>
+          <span className="text-[7px] text-gray-500">F</span>
         </div>
       </div>
 
@@ -164,7 +163,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       <svg 
         viewBox={`${viewBoxOffset} ${viewBoxOffset} ${viewBoxSize} ${viewBoxSize}`}
         className="w-full h-full transition-all duration-300"
-        style={{ minHeight: '400px' }}
+        preserveAspectRatio="xMidYMid meet"
       >
         {/* Black space background */}
         <rect x="-200" y="-200" width="800" height="800" fill="#050505" />
@@ -541,49 +540,49 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </g>
       </svg>
 
-      {/* Orbital Periods Panel */}
-      <div className="absolute bottom-4 right-4 border border-white/20 bg-black/80 p-3 z-10">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Orbital Periods</p>
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#a1a1aa' }} />
-              <span className="text-[10px] text-gray-400">Mercury</span>
+      {/* Orbital Periods Panel - Compact */}
+      <div className="absolute bottom-2 right-2 border border-white/20 bg-black/80 p-2 z-10">
+        <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">Orbital Periods</p>
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#a1a1aa' }} />
+              <span className="text-[8px] text-gray-400">Mer</span>
             </div>
-            <span className="text-[10px] text-accent-cyan font-mono">88d <span className="text-gray-500">(4.15×)</span></span>
+            <span className="text-[8px] text-accent-cyan font-mono">88d</span>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#fcd34d' }} />
-              <span className="text-[10px] text-gray-400">Venus</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#fcd34d' }} />
+              <span className="text-[8px] text-gray-400">Ven</span>
             </div>
-            <span className="text-[10px] text-accent-cyan font-mono">225d <span className="text-gray-500">(1.62×)</span></span>
+            <span className="text-[8px] text-accent-cyan font-mono">225d</span>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-accent-cyan" />
-              <span className="text-[10px] text-gray-400">Earth</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent-cyan" />
+              <span className="text-[8px] text-gray-400">Ear</span>
             </div>
-            <span className="text-[10px] text-accent-cyan font-mono">365d <span className="text-gray-500">(1.0×)</span></span>
+            <span className="text-[8px] text-accent-cyan font-mono">365d</span>
           </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 border border-white/20 bg-black/80 p-3">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Threat Level</p>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-accent-green" />
-            <span className="text-[10px] text-gray-400">Low</span>
+      {/* Legend - Compact */}
+      <div className="absolute bottom-2 left-2 border border-white/20 bg-black/80 p-2">
+        <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">Threat</p>
+        <div className="flex gap-2">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent-green" />
+            <span className="text-[8px] text-gray-400">L</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-accent-amber" />
-            <span className="text-[10px] text-gray-400">Med</span>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent-amber" />
+            <span className="text-[8px] text-gray-400">M</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-accent-red" />
-            <span className="text-[10px] text-gray-400">High</span>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent-red" />
+            <span className="text-[8px] text-gray-400">H</span>
           </div>
         </div>
       </div>
