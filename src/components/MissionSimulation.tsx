@@ -24,58 +24,24 @@ const MissionSimulation = ({ asteroid, strategy, onComplete, onBack }: MissionSi
 
   const startSimulation = () => {
     setIsRunning(true);
-    setCurrentPhase(0);
-    setPhaseProgress(0);
     setLogs([]);
-    setDeflectionProgress(0);
-    addLog('Mission simulation initiated');
-    addLog(`Target: ${asteroid.name} (${asteroid.designation})`);
-    addLog(`Defense Strategy: ${strategy.name}`);
+    
+    // Instant simulation - complete all phases immediately
+    const success = Math.random() < strategy.successRate;
+    const deflection = success ? (Math.random() * 50 + 50) : (Math.random() * 30);
+    
+    // Set all phases complete
+    setCurrentPhase(phases.length - 1);
+    setPhaseProgress(100);
+    setDeflectionProgress(deflection);
+    
+    // Only show key updates in log
+    addLog(success ? 'MISSION SUCCESS: Deflection confirmed' : 'PARTIAL SUCCESS: Monitoring required');
+    addLog(`Trajectory altered by ${deflection.toFixed(2)}%`);
+    
+    setIsRunning(false);
+    setTimeout(() => onComplete(success, deflection), 500);
   };
-
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const progressInterval = setInterval(() => {
-      setPhaseProgress(prev => {
-        if (prev >= 100) {
-          if (currentPhase < phases.length - 1) {
-            setCurrentPhase(curr => curr + 1);
-            const phase = phases[currentPhase + 1];
-            addLog(`Phase ${currentPhase + 2}: ${phase.name} - ${phase.description}`);
-            
-            const agency = spaceAgencies[Math.floor(Math.random() * spaceAgencies.length)];
-            setTimeout(() => addLog(`${agency.code} confirms systems nominal`), 500);
-            
-            return 0;
-          } else {
-            setIsRunning(false);
-            const success = Math.random() < strategy.successRate;
-            const deflection = success ? (Math.random() * 50 + 50) : (Math.random() * 30);
-            setDeflectionProgress(deflection);
-            addLog(success ? 'Deflection successful' : 'Deflection partial - monitoring required');
-            addLog(`Trajectory altered by ${deflection.toFixed(2)}%`);
-            setTimeout(() => onComplete(success, deflection), 1000);
-            return 100;
-          }
-        }
-        
-        if (currentPhase === phases.length - 1) {
-          setDeflectionProgress(prev + 5);
-        }
-        
-        return prev + 5;
-      });
-    }, 50);
-
-    return () => clearInterval(progressInterval);
-  }, [isRunning, currentPhase, phases, strategy, asteroid, onComplete]);
-
-  useEffect(() => {
-    if (currentPhase === 0 && phaseProgress === 0 && isRunning) {
-      addLog(`Phase 1: ${phases[0].name} - ${phases[0].description}`);
-    }
-  }, [isRunning, currentPhase, phaseProgress, phases]);
 
   return (
     <div className="min-h-screen bg-background dot-grid">
