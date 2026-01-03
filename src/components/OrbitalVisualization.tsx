@@ -304,6 +304,82 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           opacity="0.3"
         />
 
+        {/* Selected Asteroid's Solar Orbit */}
+        {selectedAsteroid && (
+          <g>
+            {/* Asteroid orbit around sun - radius based on orbital period (Kepler's law approximation) */}
+            {(() => {
+              // Semi-major axis approximation: a³ = T² (in AU and years)
+              // For visualization, scale to match Earth's orbit at r=150
+              const semiMajorAxis = Math.pow(selectedAsteroid.orbitalPeriod, 2/3);
+              const orbitRadius = 150 * semiMajorAxis;
+              const threatLevel = selectedAsteroid.torinoScale >= 3 ? 'high' : selectedAsteroid.torinoScale >= 1 ? 'medium' : 'low';
+              const orbitColor = threatLevel === 'high' ? 'hsl(var(--accent-red))' 
+                : threatLevel === 'medium' ? 'hsl(var(--accent-amber))' 
+                : 'hsl(var(--accent-green))';
+              
+              // Calculate asteroid position on its solar orbit
+              const asteroidOrbitalSpeed = 1 / selectedAsteroid.orbitalPeriod;
+              const asteroidAngle = rotation * asteroidOrbitalSpeed;
+              const asteroidX = 50 + Math.cos((asteroidAngle * Math.PI) / 180) * orbitRadius;
+              const asteroidY = 200 + Math.sin((asteroidAngle * Math.PI) / 180) * orbitRadius;
+              
+              return (
+                <>
+                  {/* Orbit path */}
+                  <circle 
+                    cx="50" 
+                    cy="200" 
+                    r={orbitRadius}
+                    fill="none" 
+                    stroke={orbitColor}
+                    strokeWidth="1"
+                    strokeDasharray="6 4"
+                    opacity="0.6"
+                  />
+                  {/* Orbit label */}
+                  <text 
+                    x={50 + orbitRadius + 5} 
+                    y="200" 
+                    fill={orbitColor} 
+                    fontSize="6" 
+                    fontFamily="IBM Plex Mono"
+                    opacity="0.8"
+                  >
+                    {semiMajorAxis.toFixed(2)} AU
+                  </text>
+                  {/* Asteroid on its orbit */}
+                  <circle 
+                    cx={asteroidX}
+                    cy={asteroidY}
+                    r="10"
+                    fill={orbitColor}
+                    opacity="0.15"
+                  />
+                  <circle 
+                    cx={asteroidX}
+                    cy={asteroidY}
+                    r="5"
+                    fill={orbitColor}
+                    stroke="white"
+                    strokeWidth="0.5"
+                  />
+                  <text 
+                    x={asteroidX} 
+                    y={asteroidY - 10} 
+                    textAnchor="middle" 
+                    fill="white" 
+                    fontSize="7" 
+                    fontFamily="IBM Plex Mono"
+                  >
+                    {selectedAsteroid.name}
+                  </text>
+                </>
+              );
+            })()}
+          </g>
+        )}
+
         {/* Orbital Paths */}
         {asteroids.map((asteroid, index) => (
           <circle
