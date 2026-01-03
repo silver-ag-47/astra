@@ -1,9 +1,6 @@
 const CRTOverlay = () => {
   return (
-    <>
-      <div className="crt-overlay" />
-      <div className="noise-overlay" />
-    </>
+    <div className="fixed inset-0 pointer-events-none z-[9999] dot-grid opacity-30" />
   );
 };
 

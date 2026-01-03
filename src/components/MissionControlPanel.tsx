@@ -45,20 +45,20 @@ const MissionControlPanel = ({ selectedAsteroid, onLaunchMission }: MissionContr
   const damageRadius = selectedAsteroid ? calculateDamageRadius(impactEnergy) : 0;
 
   return (
-    <div className="h-full flex flex-col gap-4">
+    <div className="h-full flex flex-col gap-6">
       {/* Mission Status */}
-      <div className="brutalist-panel p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-lg tracking-[0.15em] text-foreground">
-            MISSION STATUS
+      <div className="artifact-panel p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-lg text-foreground">
+            Mission Status
           </h2>
-          <div className={`status-diamond ${selectedAsteroid ? 'bg-accent animate-blink' : 'bg-secondary'}`} />
+          <div className={`status-dot ${selectedAsteroid ? 'bg-warning status-dot-pulse' : 'bg-muted'}`} />
         </div>
         
-        <div className="text-center py-4 border-2 border-border bg-muted">
-          <p className="text-[10px] text-muted-foreground tracking-widest mb-1">CURRENT TARGET</p>
-          <p className="font-display text-2xl text-foreground glitch-text">
-            {selectedAsteroid?.name || '---'}
+        <div className="text-center py-4 border border-border">
+          <p className="data-label mb-1">Current Target</p>
+          <p className="font-display text-2xl text-foreground">
+            {selectedAsteroid?.name || '—'}
           </p>
           {selectedAsteroid && (
             <p className="text-[10px] text-muted-foreground font-mono mt-1">
@@ -70,24 +70,24 @@ const MissionControlPanel = ({ selectedAsteroid, onLaunchMission }: MissionContr
 
       {/* Countdown Timer */}
       {time && (
-        <div className="brutalist-panel-red p-4">
-          <p className="text-[10px] text-muted-foreground tracking-widest text-center mb-2">
-            TIME TO CLOSE APPROACH
+        <div className="artifact-panel p-4">
+          <p className="data-label text-center mb-3">
+            Time to Close Approach
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { value: time.days, label: 'DAYS' },
-              { value: time.hours, label: 'HRS' },
-              { value: time.mins, label: 'MIN' },
-              { value: time.secs, label: 'SEC' },
+              { value: time.days, label: 'Days' },
+              { value: time.hours, label: 'Hrs' },
+              { value: time.mins, label: 'Min' },
+              { value: time.secs, label: 'Sec' },
             ].map((item, i) => (
               <div key={i} className="text-center">
-                <div className="bg-background border-2 border-primary p-2">
-                  <span className="font-mono text-xl text-primary countdown-display">
+                <div className="border border-border py-2">
+                  <span className="font-mono text-lg text-foreground countdown-display">
                     {item.value}
                   </span>
                 </div>
-                <span className="text-[8px] text-muted-foreground">{item.label}</span>
+                <span className="text-[9px] text-muted-foreground">{item.label}</span>
               </div>
             ))}
           </div>
@@ -96,21 +96,21 @@ const MissionControlPanel = ({ selectedAsteroid, onLaunchMission }: MissionContr
 
       {/* Threat Assessment Quick View */}
       {selectedAsteroid && (
-        <div className="brutalist-panel p-4">
-          <h3 className="font-display text-sm tracking-widest text-foreground mb-3">
-            THREAT ASSESSMENT
+        <div className="artifact-panel p-4">
+          <h3 className="font-display text-sm text-foreground mb-4">
+            Threat Assessment
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Impact Energy:</span>
-              <span className="font-mono text-primary">{impactEnergy.toFixed(2)} MT</span>
+              <span className="text-muted-foreground">Impact Energy</span>
+              <span className="font-mono text-foreground">{impactEnergy.toFixed(2)} MT</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Damage Radius:</span>
-              <span className="font-mono text-accent">{damageRadius.toFixed(1)} km</span>
+              <span className="text-muted-foreground">Damage Radius</span>
+              <span className="font-mono text-foreground">{damageRadius.toFixed(1)} km</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Palermo Scale:</span>
+              <span className="text-muted-foreground">Palermo Scale</span>
               <span className="font-mono text-foreground">{selectedAsteroid.palermoScale}</span>
             </div>
           </div>
@@ -118,24 +118,21 @@ const MissionControlPanel = ({ selectedAsteroid, onLaunchMission }: MissionContr
       )}
 
       {/* Agency Contributions */}
-      <div className="brutalist-panel p-4 flex-1">
-        <h3 className="font-display text-sm tracking-widest text-foreground mb-3">
-          COALITION RESOURCES
+      <div className="artifact-panel p-4 flex-1">
+        <h3 className="font-display text-sm text-foreground mb-4">
+          Coalition Resources
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {spaceAgencies.map((agency) => (
             <div key={agency.id}>
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex justify-between items-center mb-1.5">
                 <span className="font-mono text-xs text-foreground">{agency.code}</span>
                 <span className="font-mono text-xs text-muted-foreground">{agency.contribution}%</span>
               </div>
-              <div className="progress-brutal">
+              <div className="progress-artifact">
                 <div 
-                  className="progress-brutal-fill"
-                  style={{ 
-                    width: `${agency.contribution}%`,
-                    backgroundColor: agency.color,
-                  }}
+                  className="progress-artifact-fill"
+                  style={{ width: `${agency.contribution}%` }}
                 />
               </div>
             </div>
@@ -147,9 +144,9 @@ const MissionControlPanel = ({ selectedAsteroid, onLaunchMission }: MissionContr
       <button
         onClick={onLaunchMission}
         disabled={!selectedAsteroid}
-        className={`btn-brutal-primary w-full py-4 ${!selectedAsteroid ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`btn-artifact-primary w-full py-3 ${!selectedAsteroid ? 'opacity-30 cursor-not-allowed' : ''}`}
       >
-        <span className="text-xl">INITIATE DEFENSE MISSION</span>
+        Initiate Defense Mission →
       </button>
     </div>
   );

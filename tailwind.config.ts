@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Bebas Neue', 'sans-serif'],
+        display: ['Instrument Serif', 'serif'],
         mono: ['IBM Plex Mono', 'monospace'],
-        serif: ['Crimson Pro', 'serif'],
+        serif: ['Instrument Serif', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,15 +52,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        terminal: "hsl(var(--terminal-green))",
-        soviet: "hsl(var(--soviet-blue))",
-        paper: "hsl(var(--paper-yellow))",
-        blood: "hsl(var(--blood-red))",
-        concrete: {
-          dark: "hsl(var(--concrete-dark))",
-          mid: "hsl(var(--concrete-mid))",
-          light: "hsl(var(--concrete-light))",
-        },
+        dot: "hsl(var(--dot-color))",
+        highlight: "hsl(var(--highlight))",
+        danger: "hsl(var(--danger))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -78,9 +74,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        brutal: "6px 6px 0px hsl(0 0% 5%)",
-        "brutal-lg": "10px 10px 0px hsl(0 0% 5%)",
-        "brutal-red": "6px 6px 0px hsl(0 100% 27%)",
+        subtle: "0 1px 2px hsl(var(--foreground) / 0.05)",
+        elevated: "0 2px 8px hsl(var(--foreground) / 0.08)",
       },
       keyframes: {
         "accordion-down": {
@@ -91,26 +86,17 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "blink": {
-          "0%, 50%": { opacity: "1" },
-          "51%, 100%": { opacity: "0.3" },
+        "pulse-subtle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
         },
-        "radar-sweep": {
-          from: { transform: "rotate(0deg)" },
-          to: { transform: "rotate(360deg)" },
-        },
-        "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 5px hsl(var(--primary))" },
-          "50%": { boxShadow: "0 0 20px hsl(var(--primary)), 0 0 40px hsl(var(--primary))" },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
         },
         "slide-up": {
-          from: { transform: "translateY(20px)", opacity: "0" },
+          from: { transform: "translateY(8px)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
-        },
-        "flash": {
-          "0%": { opacity: "0", filter: "brightness(2)" },
-          "50%": { filter: "brightness(1.5)" },
-          "100%": { opacity: "1", filter: "brightness(1)" },
         },
         "trajectory": {
           "0%": { strokeDashoffset: "1000" },
@@ -120,11 +106,9 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "blink": "blink 1s step-start infinite",
-        "radar": "radar-sweep 4s linear infinite",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-        "slide-up": "slide-up 0.5s ease-out",
-        "flash": "flash 0.3s ease-out",
+        "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
+        "fade-in": "fade-in 0.3s ease-out",
+        "slide-up": "slide-up 0.4s ease-out",
         "trajectory": "trajectory 2s ease-out forwards",
       },
     },

@@ -26,49 +26,45 @@ const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPagePr
   };
 
   return (
-    <div className="min-h-screen bg-background grid-bg">
+    <div className="min-h-screen bg-background dot-grid">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <div className="brutalist-panel p-4 mb-6">
+        <div className="artifact-panel p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p className="text-[10px] text-primary tracking-widest mb-1">SELECT DEFENSE PROTOCOL</p>
-              <h1 className="font-display text-3xl text-foreground tracking-wide">
-                DEFENSE STRATEGY SELECTION
+              <p className="data-label mb-1">Select Defense Protocol</p>
+              <h1 className="font-display text-3xl text-foreground">
+                Defense Strategy Selection
               </h1>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-[9px] text-muted-foreground tracking-widest">TARGET</p>
-                <p className="font-display text-xl text-primary">{asteroid.name}</p>
+                <p className="data-label">Target</p>
+                <p className="font-display text-xl text-foreground">{asteroid.name}</p>
               </div>
-              <div className={`px-3 py-1 border-2 border-border ${
-                asteroidSize === 'small' ? 'bg-terminal/20 text-terminal' :
-                asteroidSize === 'medium' ? 'bg-accent/20 text-accent' :
-                'bg-primary/20 text-primary'
-              }`}>
-                <span className="font-mono text-sm">{asteroidSize.toUpperCase()}</span>
+              <div className="tag">
+                {asteroidSize}
               </div>
             </div>
           </div>
         </div>
 
         {/* Strategy Comparison Info */}
-        <div className="emergency-alert mb-6">
+        <div className="artifact-panel p-4 mb-6 bg-accent/30">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <p className="font-serif text-sm text-foreground">
+            <p className="text-sm text-foreground">
               Select a defense strategy based on target characteristics. 
-              <span className="text-primary"> {asteroid.diameter}m diameter</span> asteroid classified as 
-              <span className="text-accent"> {asteroidSize} target</span>.
+              <span className="font-mono"> {asteroid.diameter}m diameter</span> asteroid classified as 
+              <span className="font-mono"> {asteroidSize} target</span>.
             </p>
-            <div className="text-[10px] text-muted-foreground tracking-wider">
-              TORINO: {asteroid.torinoScale} | PALERMO: {asteroid.palermoScale}
+            <div className="text-[10px] text-muted-foreground tracking-wider font-mono">
+              Torino: {asteroid.torinoScale} · Palermo: {asteroid.palermoScale}
             </div>
           </div>
         </div>
 
         {/* Strategy Cards Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
           {defenseStrategies.map((strategy) => (
             <DefenseStrategyCard
               key={strategy.id}
@@ -82,32 +78,32 @@ const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPagePr
 
         {/* Comparison Table */}
         {selectedStrategy && (
-          <div className="brutalist-panel p-6 mb-6 animate-slide-up">
-            <h2 className="font-display text-lg tracking-widest text-foreground mb-4">
-              STRATEGY ANALYSIS: {selectedStrategy.name.toUpperCase()}
+          <div className="artifact-panel p-6 mb-6 animate-fade-in">
+            <h2 className="font-display text-lg text-foreground mb-4">
+              Strategy Analysis: {selectedStrategy.name}
             </h2>
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-muted p-4 border-2 border-border">
-                <p className="text-[9px] text-muted-foreground tracking-widest mb-2">MISSION PROBABILITY</p>
+              <div className="border border-border p-4">
+                <p className="data-label mb-2">Mission Probability</p>
                 <div className="flex items-end gap-2">
-                  <span className="font-mono text-3xl text-terminal">
+                  <span className="font-mono text-2xl text-foreground">
                     {(selectedStrategy.successRate * selectedStrategy.effectiveness[asteroidSize] * 100).toFixed(0)}%
                   </span>
-                  <span className="text-xs text-muted-foreground mb-1">combined success rate</span>
+                  <span className="text-xs text-muted-foreground mb-1">combined</span>
                 </div>
               </div>
-              <div className="bg-muted p-4 border-2 border-border">
-                <p className="text-[9px] text-muted-foreground tracking-widest mb-2">TIME REQUIREMENT</p>
+              <div className="border border-border p-4">
+                <p className="data-label mb-2">Time Requirement</p>
                 <div className="flex items-end gap-2">
-                  <span className="font-mono text-3xl text-accent">{selectedStrategy.leadTime}</span>
+                  <span className="font-mono text-2xl text-foreground">{selectedStrategy.leadTime}</span>
                   <span className="text-xs text-muted-foreground mb-1">years minimum</span>
                 </div>
               </div>
-              <div className="bg-muted p-4 border-2 border-border">
-                <p className="text-[9px] text-muted-foreground tracking-widest mb-2">TECHNOLOGY READINESS</p>
+              <div className="border border-border p-4">
+                <p className="data-label mb-2">Technology Readiness</p>
                 <div className="flex items-end gap-2">
-                  <span className="font-mono text-3xl text-foreground">TRL-{selectedStrategy.techReadiness}</span>
-                  <span className="text-xs text-muted-foreground mb-1">maturity level</span>
+                  <span className="font-mono text-2xl text-foreground">TRL-{selectedStrategy.techReadiness}</span>
+                  <span className="text-xs text-muted-foreground mb-1">maturity</span>
                 </div>
               </div>
             </div>
@@ -116,15 +112,15 @@ const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPagePr
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <button onClick={onBack} className="btn-brutal flex-1">
-            ← BACK TO DASHBOARD
+          <button onClick={onBack} className="btn-artifact flex-1 py-3">
+            ← Back to Dashboard
           </button>
           <button 
             onClick={handleProceed}
             disabled={!selectedStrategy}
-            className={`btn-brutal-primary flex-1 ${!selectedStrategy ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`btn-artifact-primary flex-1 py-3 ${!selectedStrategy ? 'opacity-30 cursor-not-allowed' : ''}`}
           >
-            PROCEED TO SIMULATION →
+            Proceed to Simulation →
           </button>
         </div>
       </div>

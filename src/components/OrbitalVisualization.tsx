@@ -12,7 +12,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setRotation(prev => (prev + 0.2) % 360);
+      setRotation(prev => (prev + 0.15) % 360);
     }, 50);
     return () => clearInterval(timer);
   }, []);
@@ -32,20 +32,17 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   };
 
   return (
-    <div className="relative w-full h-full min-h-[400px] brutalist-panel overflow-hidden">
-      {/* Radar Sweep Effect */}
-      <div className="absolute inset-0 radar-sweep opacity-30" />
-      
-      {/* Grid Overlay */}
-      <div className="absolute inset-0 grid-bg opacity-50" />
+    <div className="relative w-full h-full min-h-[400px] artifact-panel overflow-hidden">
+      {/* Dot Grid Overlay */}
+      <div className="absolute inset-0 dot-grid opacity-50" />
 
       {/* Title */}
       <div className="absolute top-4 left-4 z-10">
-        <h2 className="font-display text-lg tracking-[0.2em] text-foreground">
-          ORBITAL TRACKING
+        <h2 className="font-display text-lg text-foreground">
+          Orbital Tracking
         </h2>
         <p className="text-[10px] text-muted-foreground tracking-wider">
-          NEAR-EARTH OBJECT MONITOR
+          Near-Earth Object Monitor
         </p>
       </div>
 
@@ -55,27 +52,18 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         className="w-full h-full"
         style={{ minHeight: '400px' }}
       >
-        {/* Background Grid */}
+        {/* Background Dot Grid */}
         <defs>
-          <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="hsl(0, 100%, 50%)" strokeWidth="0.3" opacity="0.2"/>
+          <pattern id="dotGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="8" cy="8" r="0.5" fill="hsl(var(--border))" />
           </pattern>
-          <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
-            <rect width="100" height="100" fill="url(#smallGrid)"/>
-            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="hsl(0, 100%, 50%)" strokeWidth="0.5" opacity="0.3"/>
+          <pattern id="gridLines" width="48" height="48" patternUnits="userSpaceOnUse">
+            <path d="M 48 0 L 0 0 0 48" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5"/>
           </pattern>
-          
-          {/* Glow filter */}
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
         </defs>
 
-        <rect width="400" height="400" fill="url(#grid)" />
+        <rect width="400" height="400" fill="url(#dotGrid)" />
+        <rect width="400" height="400" fill="url(#gridLines)" />
 
         {/* Orbital Paths */}
         {asteroids.map((asteroid, index) => (
@@ -85,25 +73,25 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             cy="200"
             r={getOrbitRadius(asteroid)}
             fill="none"
-            stroke={selectedAsteroid?.id === asteroid.id ? 'hsl(0, 100%, 50%)' : 'hsl(0, 0%, 40%)'}
-            strokeWidth={selectedAsteroid?.id === asteroid.id ? 2 : 0.5}
-            strokeDasharray={selectedAsteroid?.id === asteroid.id ? 'none' : '4 4'}
-            opacity={selectedAsteroid?.id === asteroid.id ? 1 : 0.3}
+            stroke={selectedAsteroid?.id === asteroid.id ? 'hsl(var(--foreground))' : 'hsl(var(--border))'}
+            strokeWidth={selectedAsteroid?.id === asteroid.id ? 1 : 0.5}
+            strokeDasharray={selectedAsteroid?.id === asteroid.id ? 'none' : '2 4'}
+            opacity={selectedAsteroid?.id === asteroid.id ? 1 : 0.5}
           />
         ))}
 
         {/* Earth */}
-        <circle cx="200" cy="200" r="25" fill="hsl(210, 100%, 30%)" stroke="hsl(210, 100%, 50%)" strokeWidth="2"/>
-        <text x="200" y="205" textAnchor="middle" fill="white" fontSize="10" fontFamily="Bebas Neue">
-          EARTH
+        <circle cx="200" cy="200" r="20" fill="hsl(var(--foreground))" opacity="0.1" stroke="hsl(var(--foreground))" strokeWidth="1"/>
+        <text x="200" y="204" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8" fontFamily="IBM Plex Mono">
+          Earth
         </text>
 
         {/* Moon */}
         <circle 
-          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 40} 
-          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 40} 
-          r="5" 
-          fill="hsl(0, 0%, 70%)"
+          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35} 
+          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35} 
+          r="3" 
+          fill="hsl(var(--muted-foreground))"
         />
 
         {/* Asteroids */}
@@ -111,7 +99,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           const pos = getAsteroidPosition(asteroid, index);
           const isSelected = selectedAsteroid?.id === asteroid.id;
           const isHovered = hoveredAsteroid === asteroid.id;
-          const size = Math.max(6, Math.min(15, asteroid.diameter / 30));
+          const size = Math.max(4, Math.min(10, asteroid.diameter / 40));
           
           return (
             <g key={asteroid.id}>
@@ -122,11 +110,10 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
                   y1={pos.y}
                   x2="200"
                   y2="200"
-                  stroke="hsl(0, 100%, 50%)"
-                  strokeWidth="2"
-                  strokeDasharray="8 4"
-                  className="animate-trajectory"
-                  style={{ strokeDasharray: '8 4', animation: 'trajectory 2s linear infinite' }}
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth="1"
+                  strokeDasharray="4 4"
+                  opacity="0.5"
                 />
               )}
               
@@ -136,27 +123,27 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
                 onMouseEnter={() => setHoveredAsteroid(asteroid.id)}
                 onMouseLeave={() => setHoveredAsteroid(null)}
                 className="cursor-pointer"
-                filter={isSelected || isHovered ? 'url(#glow)' : undefined}
               >
-                {/* Diamond shape */}
-                <polygon
-                  points={`${pos.x},${pos.y - size} ${pos.x + size},${pos.y} ${pos.x},${pos.y + size} ${pos.x - size},${pos.y}`}
-                  fill={asteroid.torinoScale >= 3 ? 'hsl(0, 100%, 50%)' : asteroid.torinoScale >= 1 ? 'hsl(45, 100%, 50%)' : 'hsl(120, 100%, 50%)'}
-                  stroke={isSelected ? 'white' : 'none'}
-                  strokeWidth={2}
-                  className={isSelected || isHovered ? 'animate-pulse' : ''}
+                {/* Simple circle */}
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={size}
+                  fill={isSelected || isHovered ? 'hsl(var(--foreground))' : 'transparent'}
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={isSelected ? 2 : 1}
+                  opacity={isSelected || isHovered ? 1 : 0.6}
                 />
                 
                 {/* Label */}
                 {(isSelected || isHovered) && (
                   <text
                     x={pos.x}
-                    y={pos.y - size - 8}
+                    y={pos.y - size - 6}
                     textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
+                    fill="hsl(var(--foreground))"
+                    fontSize="9"
                     fontFamily="IBM Plex Mono"
-                    fontWeight="bold"
                   >
                     {asteroid.name}
                   </text>
@@ -166,29 +153,32 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           );
         })}
 
-        {/* Compass */}
-        <g transform="translate(350, 350)">
-          <circle cx="0" cy="0" r="25" fill="none" stroke="hsl(0, 0%, 50%)" strokeWidth="1"/>
-          <text x="0" y="-30" textAnchor="middle" fill="hsl(0, 100%, 50%)" fontSize="10" fontFamily="Bebas Neue">N</text>
-          <line x1="0" y1="-20" x2="0" y2="-10" stroke="hsl(0, 100%, 50%)" strokeWidth="2"/>
+        {/* Scale indicator */}
+        <g transform="translate(320, 370)">
+          <line x1="0" y1="0" x2="50" y2="0" stroke="hsl(var(--foreground))" strokeWidth="1" />
+          <line x1="0" y1="-3" x2="0" y2="3" stroke="hsl(var(--foreground))" strokeWidth="1" />
+          <line x1="50" y1="-3" x2="50" y2="3" stroke="hsl(var(--foreground))" strokeWidth="1" />
+          <text x="25" y="12" textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize="8" fontFamily="IBM Plex Mono">
+            1 AU
+          </text>
         </g>
       </svg>
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-4 bg-background/90 border-2 border-border p-3">
-        <p className="text-[9px] text-muted-foreground tracking-wider mb-2">THREAT LEVEL</p>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-1">
-            <div className="status-diamond bg-terminal" />
-            <span className="text-[10px] text-muted-foreground">LOW</span>
+      <div className="absolute bottom-4 left-4 border border-border bg-background p-3">
+        <p className="data-label mb-2">Threat Level</p>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full border border-foreground opacity-60" />
+            <span className="text-[10px] text-muted-foreground">Low</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="status-diamond bg-accent" />
-            <span className="text-[10px] text-muted-foreground">MED</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full border border-foreground" />
+            <span className="text-[10px] text-muted-foreground">Med</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="status-diamond bg-primary animate-blink" />
-            <span className="text-[10px] text-muted-foreground">HIGH</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-foreground" />
+            <span className="text-[10px] text-muted-foreground">High</span>
           </div>
         </div>
       </div>
