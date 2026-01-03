@@ -73,7 +73,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         </button>
 
         {/* Footer Info */}
-        <div className="absolute bottom-4 left-0 right-0 text-center">
+        <div className="absolute bottom-4 left-6 text-left">
           <p className="text-[10px] text-muted-foreground tracking-wider mb-3">
             Hackathon Project · Planetary Defense Initiative
           </p>
