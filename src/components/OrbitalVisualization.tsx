@@ -181,7 +181,69 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           </text>
         </g>
 
-        {/* Earth's orbital path around the Sun */}
+        {/* Mercury's orbital path (0.39 AU from Sun) */}
+        <circle 
+          cx="50" 
+          cy="200" 
+          r="58" 
+          fill="none" 
+          stroke="#a1a1aa" 
+          strokeWidth="0.5" 
+          strokeDasharray="2 4"
+          opacity="0.4"
+        />
+        {/* Mercury */}
+        <circle 
+          cx={50 + Math.cos((rotation * 4.15 * Math.PI) / 180) * 58} 
+          cy={200 + Math.sin((rotation * 4.15 * Math.PI) / 180) * 58} 
+          r="4" 
+          fill="#a1a1aa"
+          stroke="rgba(255,255,255,0.3)"
+          strokeWidth="0.5"
+        />
+        <text 
+          x={50 + Math.cos((rotation * 4.15 * Math.PI) / 180) * 58} 
+          y={200 + Math.sin((rotation * 4.15 * Math.PI) / 180) * 58 + 10} 
+          textAnchor="middle" 
+          fill="rgba(255,255,255,0.5)" 
+          fontSize="5" 
+          fontFamily="IBM Plex Mono"
+        >
+          MERCURY
+        </text>
+
+        {/* Venus's orbital path (0.72 AU from Sun) */}
+        <circle 
+          cx="50" 
+          cy="200" 
+          r="108" 
+          fill="none" 
+          stroke="#fcd34d" 
+          strokeWidth="0.5" 
+          strokeDasharray="3 6"
+          opacity="0.35"
+        />
+        {/* Venus */}
+        <circle 
+          cx={50 + Math.cos((rotation * 1.62 * Math.PI) / 180) * 108} 
+          cy={200 + Math.sin((rotation * 1.62 * Math.PI) / 180) * 108} 
+          r="7" 
+          fill="#fcd34d"
+          stroke="rgba(255,255,255,0.3)"
+          strokeWidth="0.5"
+        />
+        <text 
+          x={50 + Math.cos((rotation * 1.62 * Math.PI) / 180) * 108} 
+          y={200 + Math.sin((rotation * 1.62 * Math.PI) / 180) * 108 + 13} 
+          textAnchor="middle" 
+          fill="rgba(255,255,255,0.5)" 
+          fontSize="5" 
+          fontFamily="IBM Plex Mono"
+        >
+          VENUS
+        </text>
+
+        {/* Earth's orbital path around the Sun (1 AU) */}
         <circle 
           cx="50" 
           cy="200" 
