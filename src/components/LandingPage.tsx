@@ -34,7 +34,8 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
       <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center p-8 transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
         
         {/* Status Tag */}
-        <div className="tag mb-8">
+        <div className="tag mb-8 border-accent-green text-accent-green">
+          <span className="w-2 h-2 bg-accent-green rounded-full mr-2 animate-pulse-subtle"></span>
           Simulation Active
         </div>
 
@@ -53,12 +54,12 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-px bg-border mb-16 max-w-md w-full border border-border">
           {[
-            { value: '6', label: 'Active Threats' },
-            { value: '5', label: 'Partner Agencies' },
-            { value: '4', label: 'Defense Systems' },
+            { value: '6', label: 'Active Threats', color: 'text-accent-red' },
+            { value: '5', label: 'Partner Agencies', color: 'text-accent-cyan' },
+            { value: '4', label: 'Defense Systems', color: 'text-accent-green' },
           ].map((stat, i) => (
             <div key={i} className="bg-background p-6 text-center">
-              <p className="font-display text-3xl text-foreground">{stat.value}</p>
+              <p className={`font-display text-3xl ${stat.color}`}>{stat.value}</p>
               <p className="text-[10px] text-muted-foreground tracking-wider mt-1 uppercase">{stat.label}</p>
             </div>
           ))}
@@ -67,7 +68,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         {/* CTA Button */}
         <button
           onClick={onEnter}
-          className="btn-artifact-primary px-8 py-3"
+          className="bg-accent-amber text-background px-8 py-3 font-mono text-xs tracking-wide border border-accent-amber hover:opacity-90 transition-opacity"
         >
           Enter Command Center →
         </button>
@@ -77,16 +78,16 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
           <p className="text-[10px] text-muted-foreground tracking-wider mb-3">
             Hackathon Project · Planetary Defense Initiative
           </p>
-          <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground font-mono">
-            <span>NASA</span>
+          <div className="flex items-center justify-center gap-4 text-[10px] font-mono">
+            <span className="text-accent-cyan">NASA</span>
             <span className="text-border">·</span>
-            <span>ESA</span>
+            <span className="text-accent-green">ESA</span>
             <span className="text-border">·</span>
-            <span>JAXA</span>
+            <span className="text-accent-red">JAXA</span>
             <span className="text-border">·</span>
-            <span>ISRO</span>
+            <span className="text-accent-amber">ISRO</span>
             <span className="text-border">·</span>
-            <span>Roscosmos</span>
+            <span className="text-accent-cyan">Roscosmos</span>
           </div>
         </div>
       </div>

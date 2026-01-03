@@ -43,9 +43,13 @@
     /* Custom Colors */
     --dot-color: 0 0% 80%;
     --highlight: 45 100% 96%;
-    --danger: 0 70% 50%;
-    --success: 145 50% 40%;
-    --warning: 40 90% 50%;
+    --danger: 0 75% 55%;
+    --success: 145 70% 42%;
+    --warning: 40 95% 50%;
+    --accent-red: 0 85% 55%;
+    --accent-green: 145 80% 45%;
+    --accent-cyan: 185 85% 50%;
+    --accent-amber: 35 95% 55%;
     
     --sidebar-background: 60 5% 97%;
     --sidebar-foreground: 0 0% 2%;
@@ -95,9 +99,13 @@
     /* Custom Colors */
     --dot-color: 0 0% 20%;
     --highlight: 0 0% 10%;
-    --danger: 0 70% 55%;
-    --success: 145 50% 50%;
-    --warning: 40 90% 55%;
+    --danger: 0 75% 55%;
+    --success: 145 70% 50%;
+    --warning: 40 95% 55%;
+    --accent-red: 0 85% 55%;
+    --accent-green: 145 80% 50%;
+    --accent-cyan: 185 85% 55%;
+    --accent-amber: 35 95% 55%;
     
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 60 5% 92%;
