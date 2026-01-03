@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, FastForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 
 interface OrbitalVisualizationProps {
   selectedAsteroid: Asteroid | null;
@@ -23,6 +24,8 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const [rotation, setRotation] = useState(0);
   const [hoveredAsteroid, setHoveredAsteroid] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [timeSpeed, setTimeSpeed] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
   const stars = useMemo(() => generateStars(150), []);
 
   const minZoom = 0.3;
@@ -41,12 +44,24 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const scaleInfo = getScaleDistance();
   const scaleBarWidth = 50 * zoom * scaleInfo.distance;
 
+  // Time speed labels
+  const getSpeedLabel = () => {
+    if (isPaused) return 'PAUSED';
+    if (timeSpeed === 0.25) return '0.25×';
+    if (timeSpeed === 0.5) return '0.5×';
+    if (timeSpeed === 1) return '1×';
+    if (timeSpeed === 2) return '2×';
+    if (timeSpeed === 4) return '4×';
+    return `${timeSpeed}×`;
+  };
+
   useEffect(() => {
+    if (isPaused) return;
     const timer = setInterval(() => {
-      setRotation(prev => (prev + 0.15) % 360);
+      setRotation(prev => (prev + 0.15 * timeSpeed) % 360);
     }, 50);
     return () => clearInterval(timer);
-  }, []);
+  }, [timeSpeed, isPaused]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 0.25, maxZoom));
@@ -108,6 +123,40 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </Button>
         <div className="text-center text-[10px] text-gray-400 mt-1">
           {Math.round(zoom * 100)}%
+        </div>
+      </div>
+
+      {/* Time Controls */}
+      <div className="absolute top-16 left-4 z-10 border border-white/20 bg-black/80 p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsPaused(!isPaused)}
+            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+          >
+            {isPaused ? (
+              <Play className="h-3 w-3 text-accent-green" />
+            ) : (
+              <Pause className="h-3 w-3 text-accent-amber" />
+            )}
+          </Button>
+          <FastForward className="h-3 w-3 text-gray-500" />
+          <span className="text-[10px] text-accent-cyan font-mono min-w-[50px]">
+            {getSpeedLabel()}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[8px] text-gray-500">SLOW</span>
+          <Slider
+            value={[timeSpeed]}
+            onValueChange={(value) => setTimeSpeed(value[0])}
+            min={0.25}
+            max={4}
+            step={0.25}
+            className="w-20"
+          />
+          <span className="text-[8px] text-gray-500">FAST</span>
         </div>
       </div>
 
