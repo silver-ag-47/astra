@@ -655,8 +655,8 @@ const Asteroid3D = ({
         )}
         
         {(isSelected || isHovered) && (
-          <Html position={[0, -size - 0.6, 0]} center>
-            <div className="bg-black/95 border px-2 py-1.5 min-w-[110px]" style={{ borderColor: threatColor }}>
+          <Html position={[0, -size - 0.8, 0]} center style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
+            <div className="bg-black/95 border px-2 py-1.5 min-w-[110px] pointer-events-none" style={{ borderColor: threatColor }}>
               <div className="text-[10px] font-mono font-bold mb-0.5" style={{ color: threatColor }}>{asteroid.name}</div>
               <div className="text-[8px] text-gray-400 space-y-0.5">
                 <div className="flex justify-between gap-3"><span>Diameter:</span><span className="text-white">{asteroid.diameter}m</span></div>
