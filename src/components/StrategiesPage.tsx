@@ -3,7 +3,7 @@ import { Asteroid, DefenseStrategy, defenseStrategies } from '@/data/asteroids';
 import DefenseStrategyCard from './DefenseStrategyCard';
 
 interface StrategiesPageProps {
-  asteroid: Asteroid;
+  asteroid: Asteroid | null;
   onSelectStrategy: (strategy: DefenseStrategy) => void;
   onBack: () => void;
 }
@@ -11,13 +11,16 @@ interface StrategiesPageProps {
 const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPageProps) => {
   const [selectedStrategy, setSelectedStrategy] = useState<DefenseStrategy | null>(null);
 
-  const getAsteroidSize = (diameter: number): 'small' | 'medium' | 'large' => {
+  const getAsteroidSize = (diameter: number | undefined): 'small' | 'medium' | 'large' => {
+    if (!diameter) return 'medium';
     if (diameter < 100) return 'small';
     if (diameter < 500) return 'medium';
     return 'large';
   };
 
-  const asteroidSize = getAsteroidSize(asteroid.diameter);
+  const asteroidSize = getAsteroidSize(asteroid?.diameter);
+
+  
 
   const handleProceed = () => {
     if (selectedStrategy) {
@@ -37,29 +40,44 @@ const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPagePr
                 Defense Strategy Selection
               </h1>
             </div>
-            <div className="flex items-center gap-4">
+            {asteroid ? (
+              <>
+                <div className="text-right">
+                  <p className="data-label">Target</p>
+                  <p className="font-display text-xl text-foreground">{asteroid.name}</p>
+                </div>
+                <div className="tag">
+                  {asteroidSize}
+                </div>
+              </>
+            ) : (
               <div className="text-right">
                 <p className="data-label">Target</p>
-                <p className="font-display text-xl text-foreground">{asteroid.name}</p>
+                <p className="font-display text-xl text-muted-foreground">No Target Selected</p>
               </div>
-              <div className="tag">
-                {asteroidSize}
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Strategy Comparison Info */}
         <div className="artifact-panel p-4 mb-6 bg-accent/30">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <p className="text-sm text-foreground">
-              Select a defense strategy based on target characteristics. 
-              <span className="font-mono"> {asteroid.diameter}m diameter</span> asteroid classified as 
-              <span className="font-mono"> {asteroidSize} target</span>.
-            </p>
-            <div className="text-[10px] text-muted-foreground tracking-wider font-mono">
-              Torino: {asteroid.torinoScale} · Palermo: {asteroid.palermoScale}
-            </div>
+            {asteroid ? (
+              <>
+                <p className="text-sm text-foreground">
+                  Select a defense strategy based on target characteristics. 
+                  <span className="font-mono"> {asteroid.diameter}m diameter</span> asteroid classified as 
+                  <span className="font-mono"> {asteroidSize} target</span>.
+                </p>
+                <div className="text-[10px] text-muted-foreground tracking-wider font-mono">
+                  Torino: {asteroid.torinoScale} · Palermo: {asteroid.palermoScale}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Browse available defense strategies. Select a target from Mission Control to run a simulation.
+              </p>
+            )}
           </div>
         </div>
 
@@ -117,10 +135,10 @@ const StrategiesPage = ({ asteroid, onSelectStrategy, onBack }: StrategiesPagePr
           </button>
           <button 
             onClick={handleProceed}
-            disabled={!selectedStrategy}
-            className={`btn-artifact-primary flex-1 py-3 ${!selectedStrategy ? 'opacity-30 cursor-not-allowed' : ''}`}
+            disabled={!selectedStrategy || !asteroid}
+            className={`btn-artifact-primary flex-1 py-3 ${(!selectedStrategy || !asteroid) ? 'opacity-30 cursor-not-allowed' : ''}`}
           >
-            Proceed to Simulation →
+            {asteroid ? 'Proceed to Simulation →' : 'Select Target First'}
           </button>
         </div>
       </div>

@@ -48,7 +48,7 @@ const Index = () => {
       setCurrentPage('landing');
     } else if (page === 'dashboard') {
       setCurrentPage('dashboard');
-    } else if (page === 'strategies' && selectedAsteroid) {
+    } else if (page === 'strategies') {
       setCurrentPage('strategies');
     }
   };
@@ -62,10 +62,6 @@ const Index = () => {
         return <Dashboard onStartMission={handleStartMission} />;
       
       case 'strategies':
-        if (!selectedAsteroid) {
-          setCurrentPage('dashboard');
-          return null;
-        }
         return (
           <StrategiesPage
             asteroid={selectedAsteroid}
