@@ -326,6 +326,169 @@ const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
   );
 };
 
+// Asteroid Belt between Mars and Jupiter
+const AsteroidBelt = ({ 
+  earthOrbitRadius, 
+  isPaused, 
+  timeSpeed 
+}: { 
+  earthOrbitRadius: number; 
+  isPaused: boolean; 
+  timeSpeed: number 
+}) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const asteroidCount = 3000;
+  
+  // Belt parameters (between Mars at 1.52 AU and Jupiter at 5.2 AU)
+  const innerRadius = earthOrbitRadius * 2.1;
+  const outerRadius = earthOrbitRadius * 3.3;
+  
+  // Generate asteroid data once
+  const asteroidData = useMemo(() => {
+    const data: { 
+      position: THREE.Vector3; 
+      rotation: THREE.Euler; 
+      scale: number; 
+      orbitRadius: number; 
+      orbitSpeed: number; 
+      initialAngle: number;
+      inclination: number;
+    }[] = [];
+    
+    const random = mulberry32(42);
+    
+    for (let i = 0; i < asteroidCount; i++) {
+      // Distribute more densely in certain regions (like real belt)
+      const radiusT = random();
+      const orbitRadius = innerRadius + (outerRadius - innerRadius) * (radiusT * radiusT * 0.6 + radiusT * 0.4);
+      
+      const initialAngle = random() * Math.PI * 2;
+      const inclination = (random() - 0.5) * 0.3; // ±8.5 degrees inclination
+      const orbitSpeed = 0.015 / Math.pow(orbitRadius / earthOrbitRadius, 1.5); // Kepler's 3rd law
+      
+      const x = Math.cos(initialAngle) * orbitRadius;
+      const z = Math.sin(initialAngle) * orbitRadius;
+      const y = z * Math.sin(inclination);
+      
+      // Random size (most are small, few are large)
+      const sizeRandom = random();
+      const scale = 0.02 + sizeRandom * sizeRandom * 0.08;
+      
+      data.push({
+        position: new THREE.Vector3(x, y, z * Math.cos(inclination)),
+        rotation: new THREE.Euler(random() * Math.PI, random() * Math.PI, random() * Math.PI),
+        scale,
+        orbitRadius,
+        orbitSpeed,
+        initialAngle,
+        inclination
+      });
+    }
+    
+    return data;
+  }, [innerRadius, outerRadius, earthOrbitRadius]);
+  
+  // Create geometry once
+  const geometry = useMemo(() => {
+    const geo = new THREE.IcosahedronGeometry(1, 0);
+    // Deform to make it irregular
+    const positions = geo.attributes.position.array as Float32Array;
+    const random = mulberry32(123);
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = 0.7 + random() * 0.6;
+      positions[i] *= noise;
+      positions[i + 1] *= noise;
+      positions[i + 2] *= noise;
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }, []);
+  
+  // Track angles for animation
+  const anglesRef = useRef<number[]>(asteroidData.map(d => d.initialAngle));
+  
+  // Set initial transforms
+  useEffect(() => {
+    if (!meshRef.current) return;
+    
+    const tempMatrix = new THREE.Matrix4();
+    const tempPosition = new THREE.Vector3();
+    const tempQuaternion = new THREE.Quaternion();
+    const tempScale = new THREE.Vector3();
+    
+    asteroidData.forEach((asteroid, i) => {
+      tempPosition.copy(asteroid.position);
+      tempQuaternion.setFromEuler(asteroid.rotation);
+      tempScale.set(asteroid.scale, asteroid.scale, asteroid.scale);
+      tempMatrix.compose(tempPosition, tempQuaternion, tempScale);
+      meshRef.current!.setMatrixAt(i, tempMatrix);
+    });
+    
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [asteroidData]);
+  
+  // Animate asteroids
+  useFrame((state, delta) => {
+    if (!meshRef.current || isPaused) return;
+    
+    const speed = timeSpeed;
+    const tempMatrix = new THREE.Matrix4();
+    const tempPosition = new THREE.Vector3();
+    const tempQuaternion = new THREE.Quaternion();
+    const tempScale = new THREE.Vector3();
+    
+    asteroidData.forEach((asteroid, i) => {
+      // Update angle
+      anglesRef.current[i] += delta * asteroid.orbitSpeed * speed;
+      const angle = anglesRef.current[i];
+      
+      // Calculate new position
+      const x = Math.cos(angle) * asteroid.orbitRadius;
+      const z = Math.sin(angle) * asteroid.orbitRadius;
+      const y = z * Math.sin(asteroid.inclination);
+      
+      tempPosition.set(x, y, z * Math.cos(asteroid.inclination));
+      
+      // Slowly rotate the asteroid
+      asteroid.rotation.x += delta * 0.1 * speed;
+      asteroid.rotation.y += delta * 0.15 * speed;
+      
+      tempQuaternion.setFromEuler(asteroid.rotation);
+      tempScale.set(asteroid.scale, asteroid.scale, asteroid.scale);
+      tempMatrix.compose(tempPosition, tempQuaternion, tempScale);
+      meshRef.current!.setMatrixAt(i, tempMatrix);
+    });
+    
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+  
+  return (
+    <group>
+      {/* Belt boundary rings (subtle) */}
+      <Ring args={[innerRadius - 0.05, innerRadius + 0.05, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#4a4a4a" transparent opacity={0.06} side={THREE.DoubleSide} />
+      </Ring>
+      <Ring args={[outerRadius - 0.05, outerRadius + 0.05, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#4a4a4a" transparent opacity={0.06} side={THREE.DoubleSide} />
+      </Ring>
+      
+      {/* Instanced asteroids */}
+      <instancedMesh 
+        ref={meshRef} 
+        args={[geometry, undefined, asteroidCount]}
+        frustumCulled={false}
+      >
+        <meshStandardMaterial 
+          color="#7a7a7a"
+          roughness={0.95}
+          metalness={0.1}
+          flatShading
+        />
+      </instancedMesh>
+    </group>
+  );
+};
+
 // Textured Mars
 const TexturedMars = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -574,6 +737,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           <TexturedVenus orbitRadius={earthOrbitRadius * 0.72} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedEarth orbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedMars orbitRadius={earthOrbitRadius * 1.52} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <AsteroidBelt earthOrbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
           
           {asteroids.map((asteroid, index) => (
             <Asteroid3D
