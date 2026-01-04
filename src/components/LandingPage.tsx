@@ -104,8 +104,11 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         {/* Main Title */}
         <div className="text-center mb-16 max-w-3xl">
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-foreground mb-6 leading-[1.1]">
-            Unified Asteroid<br />Defense Command
+            A.S.T.R.A.
           </h1>
+          <p className="font-mono text-xs text-accent-cyan tracking-widest mb-4">
+            Asteroid Simulation & Threat Response Authority
+          </p>
           
           <p className="font-mono text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
             Protecting humanity from extinction-level events through 

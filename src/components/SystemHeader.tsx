@@ -27,14 +27,14 @@ const SystemHeader = ({ onNavigate, currentPage }: SystemHeaderProps) => {
             className="flex items-center gap-3 hover:opacity-70 transition-opacity"
           >
             <div className="w-8 h-8 border border-foreground flex items-center justify-center">
-              <span className="font-display text-lg">U</span>
+              <span className="font-display text-lg">A</span>
             </div>
             <div>
               <h1 className="font-display text-xl text-foreground leading-none">
-                Unified Asteroid Defense
+                A.S.T.R.A.
               </h1>
               <p className="text-[10px] text-muted-foreground tracking-wider mt-0.5">
-                Planetary Protection Command
+                Asteroid Simulation & Threat Response Authority
               </p>
             </div>
           </button>
