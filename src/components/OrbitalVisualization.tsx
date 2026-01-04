@@ -1108,12 +1108,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      <div className="absolute bottom-14 left-2 z-10 border border-white/20 bg-black/90 p-2">
-        <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1">Controls</p>
-        <div className="space-y-0.5 text-[7px] text-gray-500">
-          <div>🖱️ Drag → Rotate</div>
-          <div>⚙️ Scroll → Zoom</div>
-          <div>⇧+Drag → Pan</div>
+      <div className="absolute bottom-14 left-2 z-10 border border-white/20 bg-black/90 p-3">
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Controls</p>
+        <div className="space-y-1.5 text-sm text-gray-300">
+          <div className="flex items-center gap-2">🖱️ <span>Drag → Rotate</span></div>
+          <div className="flex items-center gap-2">⚙️ <span>Scroll → Zoom</span></div>
+          <div className="flex items-center gap-2">⇧ <span>+Drag → Pan</span></div>
         </div>
       </div>
 
