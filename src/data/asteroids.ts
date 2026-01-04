@@ -15,6 +15,7 @@ export interface Asteroid {
   inclination: number; // degrees from ecliptic plane
   torinoScale: number;
   palermoScale: number;
+  isCustom?: boolean; // flag for user-created asteroids
 }
 
 export interface DefenseStrategy {
@@ -46,7 +47,7 @@ export interface SpaceAgency {
 }
 
 // Calculate mass from diameter (assuming spherical asteroid with density 2000 kg/m³)
-const calculateMass = (diameter: number): number => {
+export const calculateMass = (diameter: number): number => {
   const radius = diameter / 2;
   const volume = (4 / 3) * Math.PI * Math.pow(radius, 3);
   return volume * 2000; // 2000 kg/m³ density

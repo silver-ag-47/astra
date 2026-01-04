@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Asteroid, asteroids } from '@/data/asteroids';
 import AsteroidCard from './AsteroidCard';
 import OrbitalVisualization from './OrbitalVisualization';
 import MissionControlPanel from './MissionControlPanel';
 import ThreatAssessmentModal from './ThreatAssessmentModal';
+import CreateAsteroidModal from './CreateAsteroidModal';
+import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface DashboardProps {
   onStartMission: (asteroid: Asteroid) => void;
@@ -12,6 +15,30 @@ interface DashboardProps {
 const Dashboard = ({ onStartMission }: DashboardProps) => {
   const [selectedAsteroid, setSelectedAsteroid] = useState<Asteroid | null>(null);
   const [showThreatModal, setShowThreatModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [customAsteroids, setCustomAsteroids] = useState<Asteroid[]>(() => {
+    const saved = localStorage.getItem('customAsteroids');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Persist custom asteroids to localStorage
+  useEffect(() => {
+    localStorage.setItem('customAsteroids', JSON.stringify(customAsteroids));
+  }, [customAsteroids]);
+
+  const handleCreateAsteroid = (asteroid: Asteroid) => {
+    setCustomAsteroids(prev => [...prev, asteroid]);
+  };
+
+  const handleDeleteCustomAsteroid = (id: string) => {
+    setCustomAsteroids(prev => prev.filter(a => a.id !== id));
+    if (selectedAsteroid?.id === id) {
+      setSelectedAsteroid(null);
+    }
+  };
+
+  // Combine default and custom asteroids
+  const allAsteroids = [...asteroids, ...customAsteroids];
 
   const handleAsteroidClick = (asteroid: Asteroid) => {
     setSelectedAsteroid(asteroid);
@@ -31,7 +58,7 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
   };
 
   // Sort asteroids by Torino scale (highest first)
-  const sortedAsteroids = [...asteroids].sort((a, b) => b.torinoScale - a.torinoScale);
+  const sortedAsteroids = [...allAsteroids].sort((a, b) => b.torinoScale - a.torinoScale);
 
   return (
     <div className="min-h-[calc(100vh-60px)] bg-background">
@@ -43,25 +70,52 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
               <h2 className="font-display text-lg text-foreground">
                 Active Threats
               </h2>
-              <div className="status-dot bg-foreground status-dot-pulse" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateModal(true)}
+                className="gap-1 h-7 text-xs"
+              >
+                <Plus className="w-3 h-3" />
+                Create
+              </Button>
             </div>
             <p className="text-[10px] text-muted-foreground tracking-wider">
-              {asteroids.length} Near-Earth Objects Tracked
+              {allAsteroids.length} Near-Earth Objects Tracked
+              {customAsteroids.length > 0 && ` (${customAsteroids.length} custom)`}
             </p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {sortedAsteroids.map((asteroid) => (
-              <AsteroidCard
-                key={asteroid.id}
-                asteroid={asteroid}
-                onClick={() => handleAsteroidClick(asteroid)}
-                onViewThreat={() => {
-                  setSelectedAsteroid(asteroid);
-                  setShowThreatModal(true);
-                }}
-                isSelected={selectedAsteroid?.id === asteroid.id}
-              />
+              <div key={asteroid.id} className="relative group">
+                <AsteroidCard
+                  asteroid={asteroid}
+                  onClick={() => handleAsteroidClick(asteroid)}
+                  onViewThreat={() => {
+                    setSelectedAsteroid(asteroid);
+                    setShowThreatModal(true);
+                  }}
+                  isSelected={selectedAsteroid?.id === asteroid.id}
+                />
+                {asteroid.isCustom && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCustomAsteroid(asteroid.id);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 rounded bg-destructive/80 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                    title="Delete custom asteroid"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+                {asteroid.isCustom && (
+                  <span className="absolute bottom-2 right-2 text-[8px] uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                    Custom
+                  </span>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -72,6 +126,7 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
             <OrbitalVisualization
               selectedAsteroid={selectedAsteroid}
               onSelectAsteroid={setSelectedAsteroid}
+              customAsteroids={customAsteroids}
             />
           </div>
           
@@ -111,6 +166,13 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
           onProceed={handleProceedToStrategy}
         />
       )}
+
+      {/* Create Asteroid Modal */}
+      <CreateAsteroidModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onCreateAsteroid={handleCreateAsteroid}
+      />
     </div>
   );
 };
