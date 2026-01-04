@@ -6,6 +6,7 @@ import { MissionHUD, MissionPhase, MissionOutcome } from './MissionHUD';
 import { MissionSpacecraft } from './mission/MissionSpacecraft';
 import { Explosion, LaserBeam, GravityField, TrajectoryLine } from './mission/MissionEffects';
 import { Asteroid, DefenseStrategy } from '@/data/asteroids';
+import { useMissionSounds } from '@/hooks/useMissionSounds';
 
 interface MissionOrbitalSimulationProps {
   asteroid: Asteroid;
@@ -141,7 +142,8 @@ const MissionScene = ({
   distanceToTarget,
   setDistanceToTarget,
   timeRemaining,
-  setTimeRemaining
+  setTimeRemaining,
+  sounds
 }: {
   asteroid: Asteroid;
   strategy: DefenseStrategy;
@@ -161,6 +163,7 @@ const MissionScene = ({
   setDistanceToTarget: (d: number) => void;
   timeRemaining: number;
   setTimeRemaining: (t: number) => void;
+  sounds: ReturnType<typeof useMissionSounds>;
 }) => {
   const earthPosition: [number, number, number] = [0, 0, 0];
   const [showExplosion, setShowExplosion] = useState(false);
@@ -171,6 +174,8 @@ const MissionScene = ({
   const [showGravityField, setShowGravityField] = useState(false);
   const phaseStartTime = useRef(Date.now());
   const missionDetermined = useRef(false);
+  const launchSoundPlayed = useRef(false);
+  const laserSoundPlayed = useRef(false);
 
   const asteroidSize = useMemo(() => {
     return Math.min(0.3, Math.max(0.1, asteroid.diameter / 1000));
@@ -212,11 +217,18 @@ const MissionScene = ({
         if (elapsed > 4) {
           setPhase('launch');
           phaseStartTime.current = Date.now();
+          launchSoundPlayed.current = false;
         }
         break;
       }
 
       case 'launch': {
+        // Play launch sound at start of launch phase
+        if (!launchSoundPlayed.current) {
+          launchSoundPlayed.current = true;
+          sounds.playLaunch();
+        }
+        
         // Spacecraft launches from Earth
         const launchProgress = Math.min(1, elapsed / 3);
         const targetDir = new THREE.Vector3(
@@ -243,6 +255,11 @@ const MissionScene = ({
         // Start strategy-specific effects
         if (strategy.code === 'LASR' && elapsed > 1) {
           setShowLaser(true);
+          // Play laser beam sound
+          if (!laserSoundPlayed.current) {
+            laserSoundPlayed.current = true;
+            sounds.playLaserBeam();
+          }
         }
         if (strategy.code === 'GRAV' && elapsed > 2) {
           setShowGravityField(true);
@@ -296,9 +313,21 @@ const MissionScene = ({
           missionDetermined.current = true;
           const success = calculateSuccess();
           
-          // Show explosion
+          // Show explosion and play appropriate sound
           setExplosionPosition(asteroidPosition);
           setShowExplosion(true);
+          
+          // Stop laser sound if playing
+          if (strategy.code === 'LASR') {
+            sounds.stopAllSounds();
+          }
+          
+          // Play impact sound based on strategy
+          if (strategy.code === 'NUKE') {
+            sounds.playNuclearExplosion();
+          } else {
+            sounds.playImpact();
+          }
           
           if (success) {
             if (strategy.code === 'NUKE' || asteroid.diameter < 200) {
@@ -312,6 +341,13 @@ const MissionScene = ({
             setPhase('outcome');
             setOutcome(success ? 'success' : 'failure');
             phaseStartTime.current = Date.now();
+            
+            // Play success or failure sound
+            if (success) {
+              sounds.playSuccess();
+            } else {
+              sounds.playFailure();
+            }
           }, 2000);
         }
         break;
@@ -459,6 +495,16 @@ export const MissionOrbitalSimulation = ({
   const [distanceToEarth, setDistanceToEarth] = useState(8);
   const [distanceToTarget, setDistanceToTarget] = useState(8);
   const [timeRemaining, setTimeRemaining] = useState(30);
+  
+  const sounds = useMissionSounds();
+
+  // Start space ambience on mount
+  useEffect(() => {
+    sounds.playSpaceAmbience();
+    return () => {
+      sounds.stopAllSounds();
+    };
+  }, []);
 
   const successProbability = useMemo(() => {
     let prob = strategy.successRate * 100;
@@ -491,6 +537,7 @@ export const MissionOrbitalSimulation = ({
           setDistanceToTarget={setDistanceToTarget}
           timeRemaining={timeRemaining}
           setTimeRemaining={setTimeRemaining}
+          sounds={sounds}
         />
       </Canvas>
       
