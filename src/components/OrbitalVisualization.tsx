@@ -945,7 +945,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       </Canvas>
 
       {/* UI Overlays */}
-      <div className="absolute top-2 left-2 z-10">
+      <div className="absolute top-2 left-2 z-50 pointer-events-auto">
         <h2 className="font-display text-sm text-white">Orbital Tracking</h2>
         <p className="text-[9px] text-gray-500 tracking-wider mb-2">NASA TEXTURED 3D MODEL</p>
         
