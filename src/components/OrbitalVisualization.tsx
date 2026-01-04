@@ -1117,12 +1117,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      <div className="absolute bottom-2 left-2 border border-white/20 bg-black/90 p-2">
-        <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1">Threat Level</p>
-        <div className="flex gap-2">
-          <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /><span className="text-[8px] text-gray-400">Low</span></div>
-          <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-[8px] text-gray-400">Med</span></div>
-          <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[8px] text-gray-400">High</span></div>
+      <div className="absolute bottom-2 left-2 border border-white/20 bg-black/90 p-3">
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Threat Level</p>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500" /><span className="text-sm text-gray-300">Low</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-500" /><span className="text-sm text-gray-300">Med</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm text-gray-300">High</span></div>
         </div>
       </div>
 
