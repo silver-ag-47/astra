@@ -82,11 +82,22 @@ const mulberry32 = (a: number) => {
   };
 };
 
+// Configure texture for proper spherical mapping
+const configureTexture = (texture: THREE.Texture) => {
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 16;
+  return texture;
+};
+
 // Textured Sun with corona
 const TexturedSun = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const coronaRef = useRef<THREE.Mesh>(null);
   const sunTexture = useLoader(THREE.TextureLoader, '/textures/sun.jpg');
+  
+  useMemo(() => configureTexture(sunTexture), [sunTexture]);
   
   useFrame((state) => {
     if (meshRef.current) meshRef.current.rotation.y += 0.0003;
@@ -98,9 +109,10 @@ const TexturedSun = () => {
 
   return (
     <group position={[0, 0, 0]}>
-      <Sphere ref={meshRef} args={[2.5, 64, 64]}>
+      <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+        <sphereGeometry args={[2.5, 64, 64]} />
         <meshBasicMaterial map={sunTexture} />
-      </Sphere>
+      </mesh>
       <Sphere args={[2.8, 48, 48]}>
         <meshBasicMaterial color="#FF8C00" transparent opacity={0.4} />
       </Sphere>
@@ -125,6 +137,8 @@ const TexturedMercury = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: nu
   const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
   const mercuryTexture = useLoader(THREE.TextureLoader, '/textures/mercury.jpg');
 
+  useMemo(() => configureTexture(mercuryTexture), [mercuryTexture]);
+
   useFrame((state, delta) => {
     const speed = isPaused ? 0 : timeSpeed;
     if (meshRef.current) meshRef.current.rotation.y += 0.002 * speed;
@@ -141,9 +155,10 @@ const TexturedMercury = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: nu
         <meshBasicMaterial color="#8c8c8c" transparent opacity={0.12} side={THREE.DoubleSide} />
       </Ring>
       <group ref={groupRef}>
-        <Sphere ref={meshRef} args={[0.25, 48, 48]}>
+        <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+          <sphereGeometry args={[0.25, 64, 64]} />
           <meshStandardMaterial map={mercuryTexture} roughness={0.9} metalness={0.1} />
-        </Sphere>
+        </mesh>
         <Html position={[0, -0.5, 0]} center>
           <span className="text-[7px] text-gray-500 font-mono">MERCURY</span>
         </Html>
@@ -161,9 +176,14 @@ const TexturedVenus = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
   const venusTexture = useLoader(THREE.TextureLoader, '/textures/venus.jpg');
   const venusAtmosphere = useLoader(THREE.TextureLoader, '/textures/venus_atmosphere.jpg');
 
+  useMemo(() => {
+    configureTexture(venusTexture);
+    configureTexture(venusAtmosphere);
+  }, [venusTexture, venusAtmosphere]);
+
   useFrame((state, delta) => {
     const speed = isPaused ? 0 : timeSpeed;
-    if (meshRef.current) meshRef.current.rotation.y -= 0.001 * speed; // Venus rotates backwards
+    if (meshRef.current) meshRef.current.rotation.y -= 0.001 * speed;
     if (atmosphereRef.current) atmosphereRef.current.rotation.y += 0.003 * speed;
     if (groupRef.current) {
       setAngle(prev => prev + delta * 0.162 * speed);
@@ -179,12 +199,14 @@ const TexturedVenus = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
       </Ring>
       <group ref={groupRef}>
         <group rotation={[177.4 * Math.PI / 180, 0, 0]}>
-          <Sphere ref={meshRef} args={[0.55, 48, 48]}>
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.55, 64, 64]} />
             <meshStandardMaterial map={venusTexture} roughness={0.8} metalness={0.1} />
-          </Sphere>
-          <Sphere ref={atmosphereRef} args={[0.62, 48, 48]}>
+          </mesh>
+          <mesh ref={atmosphereRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.62, 48, 48]} />
             <meshStandardMaterial map={venusAtmosphere} transparent opacity={0.7} roughness={1} />
-          </Sphere>
+          </mesh>
           <Sphere args={[0.68, 32, 32]}>
             <meshBasicMaterial color="#fff5d4" transparent opacity={0.15} />
           </Sphere>
@@ -211,13 +233,18 @@ const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
   const cloudsTexture = useLoader(THREE.TextureLoader, '/textures/earth_clouds.jpg');
   const moonTexture = useLoader(THREE.TextureLoader, '/textures/moon.jpg');
 
+  useMemo(() => {
+    configureTexture(earthTexture);
+    configureTexture(cloudsTexture);
+    configureTexture(moonTexture);
+  }, [earthTexture, cloudsTexture, moonTexture]);
+
   useFrame((state, delta) => {
     const speed = isPaused ? 0 : timeSpeed;
     
     if (earthRef.current) earthRef.current.rotation.y += 0.003 * speed;
     if (cloudsRef.current) {
       cloudsRef.current.rotation.y += 0.004 * speed;
-      cloudsRef.current.rotation.x += 0.0003 * speed;
     }
     if (moonRef.current) moonRef.current.rotation.y += 0.001 * speed;
     if (groupRef.current) {
@@ -242,23 +269,25 @@ const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
       <group ref={groupRef}>
         <group rotation={[23.5 * Math.PI / 180, 0, 0]}>
           {/* Earth surface */}
-          <Sphere ref={earthRef} args={[0.7, 64, 64]}>
+          <mesh ref={earthRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.7, 64, 64]} />
             <meshStandardMaterial 
               map={earthTexture}
               roughness={0.65}
               metalness={0.1}
             />
-          </Sphere>
+          </mesh>
           
           {/* Cloud layer */}
-          <Sphere ref={cloudsRef} args={[0.72, 48, 48]}>
+          <mesh ref={cloudsRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.72, 48, 48]} />
             <meshStandardMaterial 
               map={cloudsTexture}
               transparent
               opacity={0.45}
               depthWrite={false}
             />
-          </Sphere>
+          </mesh>
           
           {/* Atmosphere glow */}
           <Sphere args={[0.78, 32, 32]}>
@@ -276,13 +305,14 @@ const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
         
         {/* Textured Moon */}
         <group ref={moonGroupRef}>
-          <Sphere ref={moonRef} args={[0.18, 32, 32]}>
+          <mesh ref={moonRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.18, 32, 32]} />
             <meshStandardMaterial 
               map={moonTexture}
               roughness={1}
               metalness={0}
             />
-          </Sphere>
+          </mesh>
           <Html position={[0, -0.35, 0]} center>
             <span className="text-[6px] text-gray-500 font-mono">MOON</span>
           </Html>
@@ -303,6 +333,8 @@ const TexturedMars = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numbe
   const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
   const marsTexture = useLoader(THREE.TextureLoader, '/textures/mars.jpg');
 
+  useMemo(() => configureTexture(marsTexture), [marsTexture]);
+
   useFrame((state, delta) => {
     const speed = isPaused ? 0 : timeSpeed;
     if (meshRef.current) meshRef.current.rotation.y += 0.003 * speed;
@@ -320,9 +352,10 @@ const TexturedMars = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numbe
       </Ring>
       <group ref={groupRef}>
         <group rotation={[25.2 * Math.PI / 180, 0, 0]}>
-          <Sphere ref={meshRef} args={[0.4, 48, 48]}>
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.4, 64, 64]} />
             <meshStandardMaterial map={marsTexture} roughness={0.85} metalness={0.1} />
-          </Sphere>
+          </mesh>
           {/* Thin atmosphere */}
           <Sphere args={[0.43, 32, 32]}>
             <meshBasicMaterial color="#ffccaa" transparent opacity={0.06} />
