@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, FastForward } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, FastForward, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -26,6 +26,8 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const [zoom, setZoom] = useState(0.6);
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const stars = useMemo(() => generateStars(150), []);
 
   const minZoom = 0.25;
@@ -54,6 +56,32 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
     if (timeSpeed === 4) return '4×';
     return `${timeSpeed}×`;
   };
+
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch((err) => {
+        console.error('Fullscreen error:', err);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      });
+    }
+  }, []);
+
+  // Listen for fullscreen changes (e.g., user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     if (isPaused) return;
@@ -90,7 +118,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const viewBoxOffset = (400 - viewBoxSize) / 2;
 
   return (
-    <div className="relative w-full h-full min-h-[300px] overflow-hidden bg-[#050505] border border-border">
+    <div 
+      ref={containerRef}
+      className={`relative w-full h-full overflow-hidden bg-[#050505] border border-border transition-all duration-300 ${
+        isFullscreen ? 'min-h-screen' : 'min-h-[300px]'
+      }`}
+    >
       {/* Title */}
       <div className="absolute top-2 left-2 z-10">
         <h2 className="font-display text-sm text-white">
@@ -101,8 +134,21 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </p>
       </div>
 
-      {/* Zoom Controls */}
+      {/* Zoom & Fullscreen Controls */}
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleFullscreen}
+          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-3 w-3 text-white" />
+          ) : (
+            <Maximize2 className="h-3 w-3 text-white" />
+          )}
+        </Button>
         <Button
           variant="outline"
           size="icon"
