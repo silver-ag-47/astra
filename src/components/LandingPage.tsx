@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import ThemeToggle from './ThemeToggle';
+import { BookOpen, Rocket, GraduationCap, Globe, ChevronDown, ChevronUp, Atom, Calculator, Palette } from 'lucide-react';
+
 interface LandingPageProps {
   onEnter: () => void;
 }
@@ -17,8 +19,17 @@ const generateParticles = (count: number) => {
   }));
 };
 
+const steamTopics = [
+  { icon: Atom, label: 'Science', desc: 'Astronomy, physics, orbital mechanics', color: 'text-accent-cyan' },
+  { icon: Rocket, label: 'Technology', desc: 'Spacecraft systems, defense tech', color: 'text-accent-green' },
+  { icon: Calculator, label: 'Engineering', desc: 'Mission design, trajectory planning', color: 'text-accent-amber' },
+  { icon: Palette, label: 'Arts', desc: '3D visualization, UI/UX design', color: 'text-accent-red' },
+  { icon: GraduationCap, label: 'Mathematics', desc: 'Orbital calculations, probability', color: 'text-accent-cyan' },
+];
+
 const LandingPage = ({ onEnter }: LandingPageProps) => {
   const [showContent, setShowContent] = useState(false);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
   const particles = useMemo(() => generateParticles(40), []);
 
   useEffect(() => {
@@ -95,6 +106,78 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
       {/* Content */}
       <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center p-8 transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
         
+        {/* About Section - Collapsible */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-20">
+          <button
+            onClick={() => setAboutExpanded(!aboutExpanded)}
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-background/80 backdrop-blur-sm border border-border hover:border-accent-cyan/50 transition-colors font-mono text-xs text-muted-foreground hover:text-foreground"
+          >
+            <BookOpen className="w-3 h-3" />
+            About A.S.T.R.A. - STEAM Educational Project
+            {aboutExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          
+          <div className={`overflow-hidden transition-all duration-500 ${aboutExpanded ? 'max-h-[600px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+            <div className="bg-background/90 backdrop-blur-sm border border-border p-6 space-y-6">
+              
+              {/* Project Overview */}
+              <div className="text-center border-b border-border pb-4">
+                <h3 className="font-display text-lg text-foreground mb-2 flex items-center justify-center gap-2">
+                  <Globe className="w-4 h-4 text-accent-cyan" />
+                  Project Overview
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+                  A.S.T.R.A. (Asteroid Simulation & Threat Response Authority) is an interactive educational simulation 
+                  that demonstrates real-world planetary defense concepts. Inspired by NASA's DART mission and international 
+                  space agencies' efforts to protect Earth from asteroid impacts.
+                </p>
+              </div>
+
+              {/* STEAM Education Grid */}
+              <div>
+                <h4 className="font-mono text-xs text-accent-green tracking-wider mb-3 text-center">STEAM LEARNING OBJECTIVES</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {steamTopics.map((topic) => (
+                    <div key={topic.label} className="bg-muted/30 border border-border p-3 text-center hover:border-accent-cyan/30 transition-colors">
+                      <topic.icon className={`w-4 h-4 mx-auto mb-1 ${topic.color}`} />
+                      <p className={`text-[10px] font-mono ${topic.color} mb-0.5`}>{topic.label}</p>
+                      <p className="text-[9px] text-muted-foreground">{topic.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Why It Matters */}
+              <div className="grid md:grid-cols-2 gap-4 text-xs">
+                <div className="bg-muted/20 border border-accent-amber/30 p-4">
+                  <h5 className="font-mono text-accent-amber mb-2 flex items-center gap-2">
+                    <GraduationCap className="w-3 h-3" />
+                    For Students
+                  </h5>
+                  <ul className="text-muted-foreground space-y-1 text-[10px]">
+                    <li>• Hands-on learning with real space science concepts</li>
+                    <li>• Understanding of NASA's actual planetary defense methods</li>
+                    <li>• Development of critical thinking and problem-solving skills</li>
+                    <li>• Engagement with interactive 3D simulations</li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 border border-accent-cyan/30 p-4">
+                  <h5 className="font-mono text-accent-cyan mb-2 flex items-center gap-2">
+                    <Rocket className="w-3 h-3" />
+                    Why It Matters
+                  </h5>
+                  <ul className="text-muted-foreground space-y-1 text-[10px]">
+                    <li>• Asteroid impacts are real threats to humanity's future</li>
+                    <li>• International cooperation is essential for planetary defense</li>
+                    <li>• Understanding space science inspires next-gen scientists</li>
+                    <li>• Makes complex astrophysics accessible and engaging</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Status Tag */}
         <div className="tag mb-8 border-accent-green text-accent-green">
           <span className="w-2 h-2 bg-accent-green rounded-full mr-2 animate-pulse-subtle"></span>
