@@ -17,6 +17,7 @@ import {
 interface OrbitalVisualizationProps {
   selectedAsteroid: Asteroid | null;
   onSelectAsteroid: (asteroid: Asteroid) => void;
+  customAsteroids?: Asteroid[];
 }
 
 // Asteroid visual properties based on their characteristics
@@ -806,7 +807,8 @@ const Asteroid3D = ({
   isPaused,
   timeSpeed,
   earthOrbitRadius,
-  isTrackedInOverview
+  isTrackedInOverview,
+  isCustom = false
 }: { 
   asteroid: Asteroid;
   index: number;
@@ -818,6 +820,7 @@ const Asteroid3D = ({
   timeSpeed: number;
   earthOrbitRadius: number;
   isTrackedInOverview: boolean;
+  isCustom?: boolean;
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
@@ -834,6 +837,7 @@ const Asteroid3D = ({
   
   const threatLevel = asteroid.torinoScale >= 3 ? 'high' : asteroid.torinoScale >= 1 ? 'medium' : 'low';
   const threatColor = threatLevel === 'high' ? '#ef4444' : threatLevel === 'medium' ? '#f59e0b' : '#22c55e';
+  const customColor = '#a855f7'; // Purple for custom asteroids
 
   // Generate elliptical orbit path points
   const orbitPoints = useMemo(() => {
@@ -885,10 +889,10 @@ const Asteroid3D = ({
       {/* Elliptical orbit path */}
       <Line 
         points={orbitPoints} 
-        color={isSelected ? threatColor : asteroidProps.color} 
+        color={isCustom ? customColor : isSelected ? threatColor : asteroidProps.color} 
         transparent 
-        opacity={isSelected ? 0.4 : 0.12}
-        lineWidth={1}
+        opacity={isSelected ? 0.4 : isCustom ? 0.25 : 0.12}
+        lineWidth={isCustom ? 1.5 : 1}
       />
       
       <group ref={groupRef}>
@@ -1236,8 +1240,11 @@ const LoadingFallback = () => (
   </Html>
 );
 
-const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVisualizationProps) => {
+const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAsteroids = [] }: OrbitalVisualizationProps) => {
   const [hoveredAsteroid, setHoveredAsteroid] = useState<string | null>(null);
+  
+  // Combine default and custom asteroids
+  const allAsteroids = useMemo(() => [...asteroids, ...customAsteroids], [customAsteroids]);
   const [zoom, setZoom] = useState(0.6);
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
@@ -1297,7 +1304,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           <TexturedNeptune orbitRadius={earthOrbitRadius * 30} isPaused={isPaused} timeSpeed={timeSpeed} />
           <Comet isPaused={isPaused} timeSpeed={timeSpeed} earthOrbitRadius={earthOrbitRadius} />
           
-          {asteroids.map((asteroid, index) => (
+          {allAsteroids.map((asteroid, index) => (
             <Asteroid3D
               key={asteroid.id}
               asteroid={asteroid}
@@ -1310,6 +1317,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
               timeSpeed={timeSpeed}
               earthOrbitRadius={earthOrbitRadius}
               isTrackedInOverview={overviewMode && selectedAsteroid?.id === asteroid.id}
+              isCustom={asteroid.isCustom}
             />
           ))}
           
