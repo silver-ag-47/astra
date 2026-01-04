@@ -3,11 +3,12 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home, Eye, Crosshair } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home, Eye, Crosshair, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import ImpactSimulation from './ImpactSimulation';
 import DamageAssessmentOverlay from './DamageAssessmentOverlay';
+import DefenseComparisonModal from './DefenseComparisonModal';
 import {
   Select,
   SelectContent,
@@ -1271,6 +1272,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
   const [overviewMode, setOverviewMode] = useState(false);
   const [isSimulatingImpact, setIsSimulatingImpact] = useState(false);
   const [showDamageAssessment, setShowDamageAssessment] = useState(false);
+  const [showDefenseComparison, setShowDefenseComparison] = useState(false);
   const [earthPosition, setEarthPosition] = useState(new THREE.Vector3(10, 0, 0));
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1531,24 +1533,35 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
                 </Button>
               </div>
               
-              {/* Impact Simulation Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setIsSimulatingImpact(true);
-                  setIsPaused(true);
-                }}
-                disabled={isSimulatingImpact}
-                className={`w-full h-7 mt-2 text-[9px] ${
-                  isSimulatingImpact 
-                    ? 'bg-red-500/30 border-red-500/60 text-red-400 cursor-not-allowed' 
-                    : 'bg-red-500/20 border-red-500/40 hover:bg-red-500/30 hover:border-red-400 text-red-400'
-                }`}
-              >
-                <Crosshair className="w-3 h-3 mr-1" />
-                {isSimulatingImpact ? 'Simulating...' : 'Simulate Impact'}
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex gap-1 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setIsSimulatingImpact(true);
+                    setIsPaused(true);
+                  }}
+                  disabled={isSimulatingImpact}
+                  className={`flex-1 h-6 text-[9px] ${
+                    isSimulatingImpact 
+                      ? 'bg-red-500/30 border-red-500/60 text-red-400 cursor-not-allowed' 
+                      : 'bg-red-500/20 border-red-500/40 hover:bg-red-500/30 hover:border-red-400 text-red-400'
+                  }`}
+                >
+                  <Crosshair className="w-3 h-3 mr-1" />
+                  {isSimulatingImpact ? 'Simulating' : 'Impact'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowDefenseComparison(true)}
+                  className="flex-1 h-6 text-[9px] bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-cyan-400"
+                >
+                  <Shield className="w-3 h-3 mr-1" />
+                  Compare
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -1611,6 +1624,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
           asteroid={selectedAsteroid}
           isVisible={showDamageAssessment}
           onClose={() => setShowDamageAssessment(false)}
+        />
+      )}
+      
+      {/* Defense Comparison Modal */}
+      {selectedAsteroid && (
+        <DefenseComparisonModal
+          asteroid={selectedAsteroid}
+          isVisible={showDefenseComparison}
+          onClose={() => setShowDefenseComparison(false)}
         />
       )}
     </div>
