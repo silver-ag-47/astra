@@ -1055,7 +1055,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       </div>
 
       {/* Top Right Controls - Stacked in a column */}
-      <div className="absolute top-2 right-2 bottom-2 z-50 pointer-events-auto flex gap-2 max-h-[calc(100%-1rem)] overflow-y-auto overflow-x-visible">
+      <div className="absolute top-2 right-2 z-50 pointer-events-auto flex gap-2">
         {/* Time Control */}
         <div className="border border-white/20 bg-black/90 p-3">
           <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
