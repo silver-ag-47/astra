@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback, Suspense } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Stars, Html, Sphere, Ring } from '@react-three/drei';
+import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, FastForward, Maximize2, Minimize2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -9,44 +12,390 @@ interface OrbitalVisualizationProps {
   onSelectAsteroid: (asteroid: Asteroid) => void;
 }
 
-// Generate random stars for space background
-const generateStars = (count: number) => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    cx: Math.random() * 800 - 200,
-    cy: Math.random() * 800 - 200,
-    r: Math.random() * 1 + 0.3,
-    opacity: Math.random() * 0.8 + 0.2,
-  }));
+// Sun component with corona and glow
+const Sun = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.001;
+    }
+    if (glowRef.current) {
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+      glowRef.current.scale.set(scale, scale, scale);
+    }
+  });
+
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Sun core */}
+      <Sphere ref={meshRef} args={[2, 64, 64]}>
+        <meshBasicMaterial color="#FDB813" />
+      </Sphere>
+      
+      {/* Sun glow layer 1 */}
+      <Sphere ref={glowRef} args={[2.2, 32, 32]}>
+        <meshBasicMaterial color="#FF8C00" transparent opacity={0.4} />
+      </Sphere>
+      
+      {/* Sun corona */}
+      <Sphere args={[2.8, 32, 32]}>
+        <meshBasicMaterial color="#FFD700" transparent opacity={0.15} />
+      </Sphere>
+      
+      {/* Point light from sun */}
+      <pointLight intensity={2} distance={100} decay={2} color="#FFF5E0" />
+      
+      {/* Label */}
+      <Html position={[0, -3, 0]} center>
+        <span className="text-[8px] text-amber-400 font-mono tracking-wider">SUN</span>
+      </Html>
+    </group>
+  );
+};
+
+// Planet component with realistic texturing
+const Planet = ({ 
+  name, 
+  radius, 
+  orbitRadius, 
+  color, 
+  orbitSpeed,
+  hasAtmosphere = false,
+  atmosphereColor = '#88ccff'
+}: { 
+  name: string; 
+  radius: number; 
+  orbitRadius: number; 
+  color: string;
+  orbitSpeed: number;
+  hasAtmosphere?: boolean;
+  atmosphereColor?: string;
+}) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.01;
+    }
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * orbitSpeed);
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+  });
+
+  return (
+    <>
+      {/* Orbit path */}
+      <Ring args={[orbitRadius - 0.02, orbitRadius + 0.02, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color={color} transparent opacity={0.2} side={THREE.DoubleSide} />
+      </Ring>
+      
+      <group ref={groupRef}>
+        {/* Planet body */}
+        <Sphere ref={meshRef} args={[radius, 32, 32]}>
+          <meshStandardMaterial 
+            color={color} 
+            roughness={0.8}
+            metalness={0.1}
+          />
+        </Sphere>
+        
+        {/* Atmosphere */}
+        {hasAtmosphere && (
+          <Sphere args={[radius * 1.15, 32, 32]}>
+            <meshBasicMaterial color={atmosphereColor} transparent opacity={0.2} />
+          </Sphere>
+        )}
+        
+        {/* Label */}
+        <Html position={[0, -radius - 0.8, 0]} center>
+          <span className="text-[7px] text-gray-400 font-mono tracking-wider whitespace-nowrap">{name}</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
+// Earth with detailed features
+const Earth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+  const earthRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const moonRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(0);
+  const [moonAngle, setMoonAngle] = useState(0);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    
+    if (earthRef.current) {
+      earthRef.current.rotation.y += 0.005 * speed;
+    }
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += 0.003 * speed;
+    }
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * 0.1 * speed);
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+    if (moonRef.current) {
+      setMoonAngle(prev => prev + delta * 0.5 * speed);
+      moonRef.current.position.x = Math.cos(moonAngle) * 1.5;
+      moonRef.current.position.z = Math.sin(moonAngle) * 1.5;
+    }
+  });
+
+  return (
+    <>
+      {/* Earth orbit path */}
+      <Ring args={[orbitRadius - 0.03, orbitRadius + 0.03, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.25} side={THREE.DoubleSide} />
+      </Ring>
+      
+      <group ref={groupRef}>
+        {/* Earth body */}
+        <Sphere ref={earthRef} args={[0.6, 64, 64]}>
+          <meshStandardMaterial 
+            color="#1a365d"
+            roughness={0.7}
+            metalness={0.1}
+          />
+        </Sphere>
+        
+        {/* Land masses overlay */}
+        <Sphere args={[0.601, 64, 64]}>
+          <meshStandardMaterial 
+            color="#22c55e"
+            roughness={0.8}
+            metalness={0}
+            transparent
+            opacity={0.6}
+          />
+        </Sphere>
+        
+        {/* Cloud layer */}
+        <Sphere ref={cloudsRef} args={[0.63, 32, 32]}>
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.3} />
+        </Sphere>
+        
+        {/* Atmosphere glow */}
+        <Sphere args={[0.7, 32, 32]}>
+          <meshBasicMaterial color="#60a5fa" transparent opacity={0.15} />
+        </Sphere>
+        
+        {/* Moon orbit path */}
+        <Ring args={[1.48, 1.52, 64]} rotation={[-Math.PI / 2, 0, 0]}>
+          <meshBasicMaterial color="#6b7280" transparent opacity={0.15} side={THREE.DoubleSide} />
+        </Ring>
+        
+        {/* Moon */}
+        <group ref={moonRef}>
+          <Sphere args={[0.15, 32, 32]}>
+            <meshStandardMaterial 
+              color="#9ca3af"
+              roughness={1}
+              metalness={0}
+            />
+          </Sphere>
+          {/* Moon craters effect */}
+          <Sphere args={[0.151, 32, 32]}>
+            <meshStandardMaterial 
+              color="#6b7280"
+              roughness={1}
+              metalness={0}
+              transparent
+              opacity={0.4}
+            />
+          </Sphere>
+          <Html position={[0, -0.4, 0]} center>
+            <span className="text-[6px] text-gray-500 font-mono">MOON</span>
+          </Html>
+        </group>
+        
+        {/* Earth label */}
+        <Html position={[0, -1.2, 0]} center>
+          <span className="text-[9px] text-cyan-400 font-mono tracking-wider font-bold">EARTH</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
+// Asteroid 3D model
+const Asteroid3D = ({ 
+  asteroid, 
+  isSelected, 
+  isHovered,
+  onSelect,
+  onHover,
+  isPaused,
+  timeSpeed,
+  earthOrbitRadius
+}: { 
+  asteroid: Asteroid;
+  isSelected: boolean;
+  isHovered: boolean;
+  onSelect: () => void;
+  onHover: (hover: boolean) => void;
+  isPaused: boolean;
+  timeSpeed: number;
+  earthOrbitRadius: number;
+}) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  
+  // Calculate orbit radius based on orbital period (Kepler's law)
+  const semiMajorAxis = Math.pow(asteroid.orbitalPeriod, 2/3);
+  const orbitRadius = earthOrbitRadius * semiMajorAxis;
+  const orbitSpeed = 0.1 / asteroid.orbitalPeriod;
+  
+  // Threat level color
+  const threatLevel = asteroid.torinoScale >= 3 ? 'high' : asteroid.torinoScale >= 1 ? 'medium' : 'low';
+  const threatColor = threatLevel === 'high' ? '#ef4444' 
+    : threatLevel === 'medium' ? '#f59e0b' 
+    : '#22c55e';
+  
+  // Size based on diameter
+  const size = Math.max(0.15, Math.min(0.5, asteroid.diameter / 200));
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * orbitSpeed * speed);
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+    if (meshRef.current) {
+      meshRef.current.rotation.x += 0.01 * speed;
+      meshRef.current.rotation.y += 0.015 * speed;
+    }
+  });
+
+  // Irregular asteroid geometry
+  const asteroidGeometry = useMemo(() => {
+    const geo = new THREE.IcosahedronGeometry(size, 1);
+    const positions = geo.attributes.position.array as Float32Array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = (Math.random() - 0.5) * 0.3;
+      positions[i] *= 1 + noise;
+      positions[i + 1] *= 1 + noise * 0.8;
+      positions[i + 2] *= 1 + noise;
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }, [size]);
+
+  return (
+    <>
+      {/* Orbit path */}
+      <Ring 
+        args={[orbitRadius - 0.02, orbitRadius + 0.02, 128]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <meshBasicMaterial 
+          color={isSelected ? threatColor : '#6b7280'} 
+          transparent 
+          opacity={isSelected ? 0.4 : 0.1} 
+          side={THREE.DoubleSide} 
+        />
+      </Ring>
+      
+      <group ref={groupRef}>
+        {/* Asteroid body */}
+        <mesh
+          ref={meshRef}
+          geometry={asteroidGeometry}
+          onClick={onSelect}
+          onPointerOver={() => onHover(true)}
+          onPointerOut={() => onHover(false)}
+        >
+          <meshStandardMaterial 
+            color={isSelected || isHovered ? threatColor : '#6b7280'}
+            roughness={0.9}
+            metalness={0.2}
+            emissive={isSelected || isHovered ? threatColor : '#000000'}
+            emissiveIntensity={isSelected ? 0.3 : isHovered ? 0.15 : 0}
+          />
+        </mesh>
+        
+        {/* Glow effect for selected/hovered */}
+        {(isSelected || isHovered) && (
+          <Sphere args={[size * 1.5, 16, 16]}>
+            <meshBasicMaterial color={threatColor} transparent opacity={0.15} />
+          </Sphere>
+        )}
+        
+        {/* Label */}
+        {(isSelected || isHovered) && (
+          <Html position={[0, -size - 0.5, 0]} center>
+            <div className="bg-black/80 border border-white/20 px-2 py-1 rounded-none">
+              <span className="text-[9px] font-mono font-bold" style={{ color: threatColor }}>
+                {asteroid.name}
+              </span>
+              <span className="text-[7px] text-gray-400 block">
+                {semiMajorAxis.toFixed(2)} AU
+              </span>
+            </div>
+          </Html>
+        )}
+        
+        {/* Trajectory line to Earth when selected */}
+        {isSelected && (
+          <line>
+            <bufferGeometry>
+              <bufferAttribute
+                attach="attributes-position"
+                count={2}
+                array={new Float32Array([
+                  0, 0, 0,
+                  -Math.cos(angle) * orbitRadius + Math.cos(angle) * earthOrbitRadius,
+                  0,
+                  -Math.sin(angle) * orbitRadius + Math.sin(angle) * earthOrbitRadius
+                ])}
+                itemSize={3}
+              />
+            </bufferGeometry>
+            <lineBasicMaterial color={threatColor} transparent opacity={0.5} linewidth={2} />
+          </line>
+        )}
+      </group>
+    </>
+  );
+};
+
+// Camera controller
+const CameraController = ({ zoom, onZoomChange }: { zoom: number; onZoomChange: (z: number) => void }) => {
+  const { camera } = useThree();
+  
+  useEffect(() => {
+    const distance = 30 / zoom;
+    camera.position.set(0, distance * 0.8, distance);
+    camera.lookAt(0, 0, 0);
+  }, [zoom, camera]);
+
+  return <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />;
 };
 
 const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVisualizationProps) => {
-  const [rotation, setRotation] = useState(0);
   const [hoveredAsteroid, setHoveredAsteroid] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0.6);
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const stars = useMemo(() => generateStars(150), []);
 
   const minZoom = 0.25;
   const maxZoom = 3;
+  const earthOrbitRadius = 8;
 
-  // Dynamic distance scale based on zoom
-  const getScaleDistance = () => {
-    const baseScale = 1 / zoom;
-    if (baseScale >= 2) return { distance: 2, label: '2 AU' };
-    if (baseScale >= 1) return { distance: 1, label: '1 AU' };
-    if (baseScale >= 0.5) return { distance: 0.5, label: '0.5 AU' };
-    if (baseScale >= 0.25) return { distance: 0.25, label: '0.25 AU' };
-    return { distance: 0.1, label: '0.1 AU' };
-  };
-
-  const scaleInfo = getScaleDistance();
-  const scaleBarWidth = 50 * zoom * scaleInfo.distance;
-
-  // Time speed labels
   const getSpeedLabel = () => {
     if (isPaused) return 'PAUSED';
     if (timeSpeed === 0.25) return '0.25×';
@@ -57,7 +406,6 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
     return `${timeSpeed}×`;
   };
 
-  // Fullscreen toggle
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
 
@@ -74,7 +422,6 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
     }
   }, []);
 
-  // Listen for fullscreen changes (e.g., user presses Escape)
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -83,39 +430,9 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setRotation(prev => (prev + 0.15 * timeSpeed) % 360);
-    }, 50);
-    return () => clearInterval(timer);
-  }, [timeSpeed, isPaused]);
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.25, maxZoom));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.25, minZoom));
-  };
-
-  const getAsteroidPosition = (asteroid: Asteroid, index: number) => {
-    const baseAngle = (index * 60) + rotation;
-    const radians = (baseAngle * Math.PI) / 180;
-    const distance = 120 + (asteroid.distance * 1000);
-    return {
-      x: 200 + Math.cos(radians) * Math.min(distance, 170),
-      y: 200 + Math.sin(radians) * Math.min(distance, 170),
-    };
-  };
-
-  const getOrbitRadius = (asteroid: Asteroid) => {
-    return 100 + (asteroid.orbitalPeriod * 30);
-  };
-
-  // Calculate viewBox based on zoom level
-  const viewBoxSize = 400 / zoom;
-  const viewBoxOffset = (400 - viewBoxSize) / 2;
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, maxZoom));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, minZoom));
+  const handleResetView = () => setZoom(0.6);
 
   return (
     <div 
@@ -124,17 +441,75 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         isFullscreen ? 'min-h-screen' : 'min-h-[300px]'
       }`}
     >
+      {/* 3D Canvas */}
+      <Canvas camera={{ position: [0, 25, 35], fov: 45 }}>
+        <Suspense fallback={null}>
+          <ambientLight intensity={0.1} />
+          
+          {/* Star field */}
+          <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={0.5} />
+          
+          {/* Sun */}
+          <Sun />
+          
+          {/* Mercury */}
+          <Planet 
+            name="MERCURY"
+            radius={0.2}
+            orbitRadius={earthOrbitRadius * 0.39}
+            color="#a1a1aa"
+            orbitSpeed={isPaused ? 0 : 0.415 * timeSpeed}
+          />
+          
+          {/* Venus */}
+          <Planet 
+            name="VENUS"
+            radius={0.4}
+            orbitRadius={earthOrbitRadius * 0.72}
+            color="#fcd34d"
+            orbitSpeed={isPaused ? 0 : 0.162 * timeSpeed}
+            hasAtmosphere
+            atmosphereColor="#fef3c7"
+          />
+          
+          {/* Earth with Moon */}
+          <Earth 
+            orbitRadius={earthOrbitRadius}
+            isPaused={isPaused}
+            timeSpeed={timeSpeed}
+          />
+          
+          {/* Asteroids */}
+          {asteroids.map((asteroid) => (
+            <Asteroid3D
+              key={asteroid.id}
+              asteroid={asteroid}
+              isSelected={selectedAsteroid?.id === asteroid.id}
+              isHovered={hoveredAsteroid === asteroid.id}
+              onSelect={() => onSelectAsteroid(asteroid)}
+              onHover={(hover) => setHoveredAsteroid(hover ? asteroid.id : null)}
+              isPaused={isPaused}
+              timeSpeed={timeSpeed}
+              earthOrbitRadius={earthOrbitRadius}
+            />
+          ))}
+          
+          {/* Camera controls */}
+          <CameraController zoom={zoom} onZoomChange={setZoom} />
+        </Suspense>
+      </Canvas>
+
       {/* Title */}
       <div className="absolute top-2 left-2 z-10">
         <h2 className="font-display text-sm text-white">
           Orbital Tracking
         </h2>
         <p className="text-[9px] text-gray-400 tracking-wider">
-          NEO Monitor
+          3D NEO Monitor
         </p>
       </div>
 
-      {/* Zoom & Fullscreen Controls */}
+      {/* Controls */}
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
         <Button
           variant="outline"
@@ -148,6 +523,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           ) : (
             <Maximize2 className="h-3 w-3 text-white" />
           )}
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleResetView}
+          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
+          title="Reset View"
+        >
+          <RotateCcw className="h-3 w-3 text-white" />
         </Button>
         <Button
           variant="outline"
@@ -172,7 +556,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      {/* Time Controls - Compact */}
+      {/* Time Controls */}
       <div className="absolute top-12 left-2 z-10 border border-white/20 bg-black/80 p-2">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Button
@@ -182,12 +566,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             className="w-5 h-5 bg-black/80 border-white/20 hover:bg-white/10 hover:border-accent-cyan"
           >
             {isPaused ? (
-              <Play className="h-2.5 w-2.5 text-accent-green" />
+              <Play className="h-2.5 w-2.5 text-green-400" />
             ) : (
-              <Pause className="h-2.5 w-2.5 text-accent-amber" />
+              <Pause className="h-2.5 w-2.5 text-amber-400" />
             )}
           </Button>
-          <span className="text-[9px] text-accent-cyan font-mono">
+          <span className="text-[9px] text-cyan-400 font-mono">
             {getSpeedLabel()}
           </span>
         </div>
@@ -205,388 +589,36 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      {/* SVG Visualization */}
-      <svg 
-        viewBox={`${viewBoxOffset} ${viewBoxOffset} ${viewBoxSize} ${viewBoxSize}`}
-        className="w-full h-full transition-all duration-300"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {/* Black space background */}
-        <rect x="-200" y="-200" width="800" height="800" fill="#050505" />
-        
-        {/* Stars */}
-        {stars.map((star) => (
-          <circle
-            key={star.id}
-            cx={star.cx}
-            cy={star.cy}
-            r={star.r}
-            fill="white"
-            opacity={star.opacity}
-          />
-        ))}
-        
-        {/* Subtle grid overlay */}
-        <defs>
-          <pattern id="spaceGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-          </pattern>
-          {/* Sun glow gradient */}
-          <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(var(--accent-amber))" stopOpacity="1" />
-            <stop offset="40%" stopColor="hsl(var(--accent-amber))" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="hsl(var(--accent-amber))" stopOpacity="0" />
-          </radialGradient>
-          {/* Earth glow gradient */}
-          <radialGradient id="earthGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(var(--accent-cyan))" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="hsl(var(--accent-cyan))" stopOpacity="0" />
-          </radialGradient>
-          {/* Moon glow gradient */}
-          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="white" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="white" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <rect x="-200" y="-200" width="800" height="800" fill="url(#spaceGrid)" />
+      {/* 3D Controls hint */}
+      <div className="absolute bottom-12 left-2 z-10 border border-white/20 bg-black/80 p-2">
+        <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">3D Controls</p>
+        <div className="space-y-0.5 text-[7px] text-gray-500">
+          <div>🖱️ Drag to rotate</div>
+          <div>⚙️ Scroll to zoom</div>
+          <div>⇧+Drag to pan</div>
+        </div>
+      </div>
 
-        {/* Sun (center of solar system) */}
-        <g>
-          <circle cx="50" cy="200" r="100" fill="url(#sunGlow)" />
-          <circle cx="50" cy="200" r="35" fill="#fbbf24" stroke="hsl(var(--accent-amber))" strokeWidth="2"/>
-          {/* Sun corona effect */}
-          <circle cx="50" cy="200" r="45" fill="none" stroke="hsl(var(--accent-amber))" strokeWidth="1" opacity="0.3"/>
-          <circle cx="50" cy="200" r="55" fill="none" stroke="hsl(var(--accent-amber))" strokeWidth="0.5" opacity="0.2"/>
-          {/* Sun rays */}
-          {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => (
-            <line
-              key={angle}
-              x1={50 + Math.cos((angle * Math.PI) / 180) * 40}
-              y1={200 + Math.sin((angle * Math.PI) / 180) * 40}
-              x2={50 + Math.cos((angle * Math.PI) / 180) * 60}
-              y2={200 + Math.sin((angle * Math.PI) / 180) * 60}
-              stroke="hsl(var(--accent-amber))"
-              strokeWidth="1.5"
-              opacity="0.5"
-            />
-          ))}
-          <text x="50" y="250" textAnchor="middle" fill="hsl(var(--accent-amber))" fontSize="8" fontFamily="IBM Plex Mono">
-            SUN
-          </text>
-        </g>
+      {/* Legend */}
+      <div className="absolute bottom-2 left-2 border border-white/20 bg-black/80 p-2">
+        <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">Threat</p>
+        <div className="flex gap-2">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="text-[8px] text-gray-400">L</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="text-[8px] text-gray-400">M</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <span className="text-[8px] text-gray-400">H</span>
+          </div>
+        </div>
+      </div>
 
-        {/* Mercury's orbital path (0.39 AU from Sun) */}
-        <circle 
-          cx="50" 
-          cy="200" 
-          r="58" 
-          fill="none" 
-          stroke="#a1a1aa" 
-          strokeWidth="0.5" 
-          strokeDasharray="2 4"
-          opacity="0.4"
-        />
-        {/* Mercury */}
-        <circle 
-          cx={50 + Math.cos((rotation * 4.15 * Math.PI) / 180) * 58} 
-          cy={200 + Math.sin((rotation * 4.15 * Math.PI) / 180) * 58} 
-          r="4" 
-          fill="#a1a1aa"
-          stroke="rgba(255,255,255,0.3)"
-          strokeWidth="0.5"
-        />
-        <text 
-          x={50 + Math.cos((rotation * 4.15 * Math.PI) / 180) * 58} 
-          y={200 + Math.sin((rotation * 4.15 * Math.PI) / 180) * 58 + 10} 
-          textAnchor="middle" 
-          fill="rgba(255,255,255,0.5)" 
-          fontSize="5" 
-          fontFamily="IBM Plex Mono"
-        >
-          MERCURY
-        </text>
-
-        {/* Venus's orbital path (0.72 AU from Sun) */}
-        <circle 
-          cx="50" 
-          cy="200" 
-          r="108" 
-          fill="none" 
-          stroke="#fcd34d" 
-          strokeWidth="0.5" 
-          strokeDasharray="3 6"
-          opacity="0.35"
-        />
-        {/* Venus */}
-        <circle 
-          cx={50 + Math.cos((rotation * 1.62 * Math.PI) / 180) * 108} 
-          cy={200 + Math.sin((rotation * 1.62 * Math.PI) / 180) * 108} 
-          r="7" 
-          fill="#fcd34d"
-          stroke="rgba(255,255,255,0.3)"
-          strokeWidth="0.5"
-        />
-        <text 
-          x={50 + Math.cos((rotation * 1.62 * Math.PI) / 180) * 108} 
-          y={200 + Math.sin((rotation * 1.62 * Math.PI) / 180) * 108 + 13} 
-          textAnchor="middle" 
-          fill="rgba(255,255,255,0.5)" 
-          fontSize="5" 
-          fontFamily="IBM Plex Mono"
-        >
-          VENUS
-        </text>
-
-        {/* Earth's orbital path around the Sun (1 AU) */}
-        <circle 
-          cx="50" 
-          cy="200" 
-          r="150" 
-          fill="none" 
-          stroke="hsl(var(--accent-cyan))" 
-          strokeWidth="0.5" 
-          strokeDasharray="4 8"
-          opacity="0.3"
-        />
-
-        {/* Selected Asteroid's Solar Orbit */}
-        {selectedAsteroid && (
-          <g>
-            {/* Asteroid orbit around sun - radius based on orbital period (Kepler's law approximation) */}
-            {(() => {
-              // Semi-major axis approximation: a³ = T² (in AU and years)
-              // For visualization, scale to match Earth's orbit at r=150
-              const semiMajorAxis = Math.pow(selectedAsteroid.orbitalPeriod, 2/3);
-              const orbitRadius = 150 * semiMajorAxis;
-              const threatLevel = selectedAsteroid.torinoScale >= 3 ? 'high' : selectedAsteroid.torinoScale >= 1 ? 'medium' : 'low';
-              const orbitColor = threatLevel === 'high' ? 'hsl(var(--accent-red))' 
-                : threatLevel === 'medium' ? 'hsl(var(--accent-amber))' 
-                : 'hsl(var(--accent-green))';
-              
-              // Calculate asteroid position on its solar orbit
-              const asteroidOrbitalSpeed = 1 / selectedAsteroid.orbitalPeriod;
-              const asteroidAngle = rotation * asteroidOrbitalSpeed;
-              const asteroidX = 50 + Math.cos((asteroidAngle * Math.PI) / 180) * orbitRadius;
-              const asteroidY = 200 + Math.sin((asteroidAngle * Math.PI) / 180) * orbitRadius;
-              
-              return (
-                <>
-                  {/* Orbit path */}
-                  <circle 
-                    cx="50" 
-                    cy="200" 
-                    r={orbitRadius}
-                    fill="none" 
-                    stroke={orbitColor}
-                    strokeWidth="1"
-                    strokeDasharray="6 4"
-                    opacity="0.6"
-                  />
-                  {/* Orbit label */}
-                  <text 
-                    x={50 + orbitRadius + 5} 
-                    y="200" 
-                    fill={orbitColor} 
-                    fontSize="6" 
-                    fontFamily="IBM Plex Mono"
-                    opacity="0.8"
-                  >
-                    {semiMajorAxis.toFixed(2)} AU
-                  </text>
-                  {/* Asteroid on its orbit */}
-                  <circle 
-                    cx={asteroidX}
-                    cy={asteroidY}
-                    r="10"
-                    fill={orbitColor}
-                    opacity="0.15"
-                  />
-                  <circle 
-                    cx={asteroidX}
-                    cy={asteroidY}
-                    r="5"
-                    fill={orbitColor}
-                    stroke="white"
-                    strokeWidth="0.5"
-                  />
-                  <text 
-                    x={asteroidX} 
-                    y={asteroidY - 10} 
-                    textAnchor="middle" 
-                    fill="white" 
-                    fontSize="7" 
-                    fontFamily="IBM Plex Mono"
-                  >
-                    {selectedAsteroid.name}
-                  </text>
-                </>
-              );
-            })()}
-          </g>
-        )}
-
-        {/* Orbital Paths */}
-        {asteroids.map((asteroid, index) => (
-          <circle
-            key={`orbit-${asteroid.id}`}
-            cx="200"
-            cy="200"
-            r={getOrbitRadius(asteroid)}
-            fill="none"
-            stroke={selectedAsteroid?.id === asteroid.id ? 'hsl(var(--accent-cyan))' : 'rgba(255,255,255,0.15)'}
-            strokeWidth={selectedAsteroid?.id === asteroid.id ? 1.5 : 0.5}
-            strokeDasharray={selectedAsteroid?.id === asteroid.id ? 'none' : '2 4'}
-            opacity={selectedAsteroid?.id === asteroid.id ? 1 : 0.6}
-          />
-        ))}
-
-        {/* Earth with glow */}
-        <circle cx="200" cy="200" r="35" fill="url(#earthGlow)" />
-        <circle cx="200" cy="200" r="18" fill="#1a365d" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5"/>
-        <circle cx="200" cy="200" r="18" fill="none" stroke="hsl(var(--accent-green))" strokeWidth="0.5" strokeDasharray="2 3" opacity="0.6"/>
-        <text x="200" y="204" textAnchor="middle" fill="white" fontSize="7" fontFamily="IBM Plex Mono">
-          EARTH
-        </text>
-
-        {/* Moon with orbit and glow */}
-        <circle 
-          cx="200"
-          cy="200"
-          r="35"
-          fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth="0.5"
-        />
-        {/* Moon glow */}
-        <circle 
-          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35} 
-          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35} 
-          r="8" 
-          fill="url(#moonGlow)"
-        />
-        <circle 
-          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35} 
-          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35} 
-          r="5" 
-          fill="#9ca3af"
-          stroke="rgba(255,255,255,0.4)"
-          strokeWidth="0.5"
-        />
-        {/* Moon craters */}
-        <circle 
-          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35 - 1} 
-          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35 - 1} 
-          r="1" 
-          fill="#6b7280"
-          opacity="0.6"
-        />
-        <circle 
-          cx={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35 + 1.5} 
-          cy={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35 + 0.5} 
-          r="0.8" 
-          fill="#6b7280"
-          opacity="0.5"
-        />
-        <text 
-          x={200 + Math.cos((rotation * 3 * Math.PI) / 180) * 35} 
-          y={200 + Math.sin((rotation * 3 * Math.PI) / 180) * 35 + 12} 
-          textAnchor="middle" 
-          fill="rgba(255,255,255,0.6)" 
-          fontSize="6" 
-          fontFamily="IBM Plex Mono"
-        >
-          MOON
-        </text>
-
-        {/* Asteroids */}
-        {asteroids.map((asteroid, index) => {
-          const pos = getAsteroidPosition(asteroid, index);
-          const isSelected = selectedAsteroid?.id === asteroid.id;
-          const isHovered = hoveredAsteroid === asteroid.id;
-          const size = Math.max(4, Math.min(10, asteroid.diameter / 40));
-          // Derive threat level from Torino scale
-          const threatLevel = asteroid.torinoScale >= 3 ? 'high' : asteroid.torinoScale >= 1 ? 'medium' : 'low';
-          const threatColor = threatLevel === 'high' ? 'hsl(var(--accent-red))' 
-            : threatLevel === 'medium' ? 'hsl(var(--accent-amber))' 
-            : 'hsl(var(--accent-green))';
-          
-          return (
-            <g key={asteroid.id}>
-              {/* Trajectory line to Earth when selected */}
-              {isSelected && (
-                <line
-                  x1={pos.x}
-                  y1={pos.y}
-                  x2="200"
-                  y2="200"
-                  stroke={threatColor}
-                  strokeWidth="1"
-                  strokeDasharray="4 4"
-                  opacity="0.7"
-                />
-              )}
-              
-              {/* Asteroid glow */}
-              {(isSelected || isHovered) && (
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={size + 6}
-                  fill={threatColor}
-                  opacity="0.2"
-                />
-              )}
-              
-              {/* Asteroid */}
-              <g
-                onClick={() => onSelectAsteroid(asteroid)}
-                onMouseEnter={() => setHoveredAsteroid(asteroid.id)}
-                onMouseLeave={() => setHoveredAsteroid(null)}
-                className="cursor-pointer"
-              >
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={size}
-                  fill={isSelected || isHovered ? threatColor : '#6b7280'}
-                  stroke={threatColor}
-                  strokeWidth={isSelected ? 2 : 1}
-                  opacity={isSelected || isHovered ? 1 : 0.7}
-                />
-                
-                {/* Label */}
-                {(isSelected || isHovered) && (
-                  <text
-                    x={pos.x}
-                    y={pos.y - size - 8}
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="9"
-                    fontFamily="IBM Plex Mono"
-                  >
-                    {asteroid.name}
-                  </text>
-                )}
-              </g>
-            </g>
-          );
-        })}
-
-        {/* Dynamic Scale indicator */}
-        <g transform={`translate(${viewBoxOffset + viewBoxSize - 80}, ${viewBoxOffset + viewBoxSize - 30})`}>
-          <line x1="0" y1="0" x2={scaleBarWidth} y2="0" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
-          <line x1="0" y1="-4" x2="0" y2="4" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
-          <line x1={scaleBarWidth} y1="-4" x2={scaleBarWidth} y2="4" stroke="hsl(var(--accent-cyan))" strokeWidth="1.5" />
-          <text x={scaleBarWidth / 2} y="14" textAnchor="middle" fill="hsl(var(--accent-cyan))" fontSize="8" fontFamily="IBM Plex Mono">
-            {scaleInfo.label}
-          </text>
-          <text x={scaleBarWidth / 2} y="-8" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="6" fontFamily="IBM Plex Mono">
-            SCALE
-          </text>
-        </g>
-      </svg>
-
-      {/* Orbital Periods Panel - Compact */}
+      {/* Orbital Periods Panel */}
       <div className="absolute bottom-2 right-2 border border-white/20 bg-black/80 p-2 z-10">
         <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">Orbital Periods</p>
         <div className="space-y-0.5">
@@ -595,40 +627,21 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
               <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#a1a1aa' }} />
               <span className="text-[8px] text-gray-400">Mer</span>
             </div>
-            <span className="text-[8px] text-accent-cyan font-mono">88d</span>
+            <span className="text-[8px] text-cyan-400 font-mono">88d</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#fcd34d' }} />
               <span className="text-[8px] text-gray-400">Ven</span>
             </div>
-            <span className="text-[8px] text-accent-cyan font-mono">225d</span>
+            <span className="text-[8px] text-cyan-400 font-mono">225d</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-cyan" />
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
               <span className="text-[8px] text-gray-400">Ear</span>
             </div>
-            <span className="text-[8px] text-accent-cyan font-mono">365d</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Legend - Compact */}
-      <div className="absolute bottom-2 left-2 border border-white/20 bg-black/80 p-2">
-        <p className="text-[8px] text-gray-400 uppercase tracking-wider mb-1">Threat</p>
-        <div className="flex gap-2">
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-accent-green" />
-            <span className="text-[8px] text-gray-400">L</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-accent-amber" />
-            <span className="text-[8px] text-gray-400">M</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-accent-red" />
-            <span className="text-[8px] text-gray-400">H</span>
+            <span className="text-[8px] text-cyan-400 font-mono">365d</span>
           </div>
         </div>
       </div>
