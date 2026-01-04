@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useDefenseSounds } from '@/hooks/useDefenseSounds';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface DefenseAnimationProps {
   strategyCode: string;
@@ -6,6 +8,8 @@ interface DefenseAnimationProps {
 
 const DefenseAnimation = ({ strategyCode }: DefenseAnimationProps) => {
   const [frame, setFrame] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const { playKineticImpactor, playGravityTractor, playNuclearDeflection, playIonBeam, stopSound } = useDefenseSounds();
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -13,6 +17,40 @@ const DefenseAnimation = ({ strategyCode }: DefenseAnimationProps) => {
     }, 50);
     return () => clearInterval(interval);
   }, []);
+
+  // Handle sound based on strategy
+  useEffect(() => {
+    if (!soundEnabled) {
+      stopSound();
+      return;
+    }
+
+    switch (strategyCode) {
+      case 'DART':
+        playKineticImpactor();
+        break;
+      case 'GRAV':
+        playGravityTractor();
+        break;
+      case 'NUKE':
+        playNuclearDeflection();
+        break;
+      case 'ION':
+        playIonBeam();
+        break;
+    }
+
+    return () => {
+      stopSound();
+    };
+  }, [soundEnabled, strategyCode, playKineticImpactor, playGravityTractor, playNuclearDeflection, playIonBeam, stopSound]);
+
+  // Stop sound when component unmounts
+  useEffect(() => {
+    return () => {
+      stopSound();
+    };
+  }, [stopSound]);
 
   const renderKineticImpactor = () => {
     const impactFrame = 60;
@@ -468,8 +506,20 @@ const DefenseAnimation = ({ strategyCode }: DefenseAnimationProps) => {
   };
 
   return (
-    <div className="w-full h-24 bg-black/50 border border-border overflow-hidden">
+    <div className="relative w-full h-24 bg-black/50 border border-border overflow-hidden">
       {renderAnimation()}
+      {/* Sound Toggle Button */}
+      <button
+        onClick={() => setSoundEnabled(!soundEnabled)}
+        className={`absolute top-1 right-1 p-1 border transition-colors ${
+          soundEnabled 
+            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' 
+            : 'bg-black/50 border-border text-muted-foreground hover:border-cyan-500 hover:text-cyan-400'
+        }`}
+        title={soundEnabled ? 'Mute sound' : 'Enable sound'}
+      >
+        {soundEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+      </button>
     </div>
   );
 };
