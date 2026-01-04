@@ -539,8 +539,69 @@ const TexturedMars = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numbe
   );
 };
 
+// Pulsing tracking indicator for overview mode
+const TrackingIndicator = ({ size, color }: { size: number; color: string }) => {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const outerRingRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
+    const pulse = 0.8 + Math.sin(time * 3) * 0.2;
+    const outerPulse = 0.7 + Math.sin(time * 2) * 0.3;
+    
+    if (ringRef.current) {
+      ringRef.current.scale.set(pulse, pulse, pulse);
+      (ringRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(time * 4) * 0.2;
+    }
+    if (outerRingRef.current) {
+      outerRingRef.current.scale.set(outerPulse, outerPulse, outerPulse);
+      outerRingRef.current.rotation.z = time * 0.5;
+      (outerRingRef.current.material as THREE.MeshBasicMaterial).opacity = 0.2 + Math.sin(time * 3) * 0.1;
+    }
+  });
+
+  return (
+    <group>
+      {/* Inner pulsing ring */}
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[size * 2.5, size * 2.8, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Outer rotating ring */}
+      <mesh ref={outerRingRef} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[size * 3.5, size * 3.7, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.25} side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Tracking crosshairs */}
+      <Line 
+        points={[[0, 0, -size * 4], [0, 0, size * 4]]} 
+        color={color} 
+        transparent 
+        opacity={0.3}
+        lineWidth={1}
+      />
+      <Line 
+        points={[[-size * 4, 0, 0], [size * 4, 0, 0]]} 
+        color={color} 
+        transparent 
+        opacity={0.3}
+        lineWidth={1}
+      />
+      
+      {/* Tracking label */}
+      <Html position={[0, size * 4, 0]} center style={{ pointerEvents: 'none' }}>
+        <div className="text-[8px] font-mono text-amber-400 bg-black/60 px-1.5 py-0.5 border border-amber-500/50 animate-pulse">
+          TRACKING
+        </div>
+      </Html>
+    </group>
+  );
+};
+
 // Asteroid with detailed info
-const Asteroid3D = ({ 
+const Asteroid3D = ({
   asteroid, 
   index,
   isSelected, 
@@ -549,7 +610,8 @@ const Asteroid3D = ({
   onHover,
   isPaused,
   timeSpeed,
-  earthOrbitRadius
+  earthOrbitRadius,
+  isTrackedInOverview
 }: { 
   asteroid: Asteroid;
   index: number;
@@ -560,6 +622,7 @@ const Asteroid3D = ({
   isPaused: boolean;
   timeSpeed: number;
   earthOrbitRadius: number;
+  isTrackedInOverview: boolean;
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
@@ -659,6 +722,11 @@ const Asteroid3D = ({
               <meshBasicMaterial color={threatColor} transparent opacity={0.05} />
             </Sphere>
           </>
+        )}
+        
+        {/* Pulsing tracking indicator in overview mode */}
+        {isTrackedInOverview && (
+          <TrackingIndicator size={size} color={threatColor} />
         )}
         
         {(isSelected || isHovered) && (
@@ -1041,6 +1109,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
               isPaused={isPaused}
               timeSpeed={timeSpeed}
               earthOrbitRadius={earthOrbitRadius}
+              isTrackedInOverview={overviewMode && selectedAsteroid?.id === asteroid.id}
             />
           ))}
           
