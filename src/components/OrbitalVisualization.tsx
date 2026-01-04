@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -1188,6 +1188,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
                 <span className="text-gray-500">Orbit Period:</span>
                 <span className="text-cyan-400 font-mono">{selectedAsteroid.orbitalPeriod.toFixed(2)} yrs</span>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => onSelectAsteroid(null as any)}
+                className="w-full mt-2 h-6 bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-[9px] text-cyan-400"
+              >
+                <Home className="w-3 h-3 mr-1" />
+                Return to Overview
+              </Button>
             </div>
           )}
         </div>
