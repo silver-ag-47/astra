@@ -129,9 +129,9 @@ const AsteroidCard = ({ asteroid, onClick, onViewThreat, onInitiateMission, isSe
             e.stopPropagation();
             onInitiateMission();
           }}
-          className="w-full mt-2 pt-3 border-t border-border flex items-center justify-center gap-2 text-xs text-cyan-400 hover:text-cyan-300 transition-colors group"
+          className="w-full mt-2 pt-3 border-t border-border flex items-center justify-center gap-2 text-xs text-red-500 hover:text-red-400 transition-colors group"
         >
-          <Rocket size={12} className="group-hover:text-cyan-300 transition-colors" />
+          <Rocket size={12} className="group-hover:text-red-400 transition-colors" />
           <span className="tracking-wider">INITIATE MISSION</span>
         </button>
       )}
