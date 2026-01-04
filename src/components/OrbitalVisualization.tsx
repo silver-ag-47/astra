@@ -1126,12 +1126,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      <div className="absolute bottom-2 right-2 border border-white/20 bg-black/90 p-2 z-10">
-        <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1">Asteroid Types</p>
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B4513' }} /><span className="text-[7px] text-gray-400">S-type (Silicate)</span></div>
-          <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2F4F4F' }} /><span className="text-[7px] text-gray-400">C-type (Carbon)</span></div>
-          <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#696969' }} /><span className="text-[7px] text-gray-400">X-type (Metallic)</span></div>
+      <div className="absolute bottom-2 right-2 border border-white/20 bg-black/90 p-3 z-10">
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Asteroid Types</p>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8B4513' }} /><span className="text-sm text-gray-300">S-type (Silicate)</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#2F4F4F' }} /><span className="text-sm text-gray-300">C-type (Carbon)</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#696969' }} /><span className="text-sm text-gray-300">X-type (Metallic)</span></div>
         </div>
       </div>
     </div>
