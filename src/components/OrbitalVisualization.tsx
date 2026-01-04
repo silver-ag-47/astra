@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
-import { OrbitControls, Stars, Html, Sphere, Ring } from '@react-three/drei';
+import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
 import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
@@ -395,8 +395,10 @@ const Asteroid3D = ({
   const meshRef = useRef<THREE.Mesh>(null);
   const [angle, setAngle] = useState(index * 1.2 + Math.random() * 0.5);
   
-  const semiMajorAxis = Math.pow(asteroid.orbitalPeriod, 2/3);
-  const orbitRadius = earthOrbitRadius * semiMajorAxis;
+  // Use real semi-major axis from asteroid data
+  const semiMajorAxis = asteroid.semiMajorAxis * earthOrbitRadius;
+  const eccentricity = asteroid.eccentricity;
+  const inclination = (asteroid.inclination * Math.PI) / 180; // Convert to radians
   const orbitSpeed = 0.1 / asteroid.orbitalPeriod;
   
   const asteroidProps = useMemo(() => getAsteroidProperties(asteroid), [asteroid]);
@@ -405,13 +407,36 @@ const Asteroid3D = ({
   const threatLevel = asteroid.torinoScale >= 3 ? 'high' : asteroid.torinoScale >= 1 ? 'medium' : 'low';
   const threatColor = threatLevel === 'high' ? '#ef4444' : threatLevel === 'medium' ? '#f59e0b' : '#22c55e';
 
+  // Generate elliptical orbit path points
+  const orbitPoints = useMemo(() => {
+    const points: [number, number, number][] = [];
+    const segments = 128;
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      // Elliptical orbit using semi-major axis and eccentricity
+      const r = (semiMajorAxis * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(theta));
+      const x = r * Math.cos(theta);
+      const z = r * Math.sin(theta);
+      // Apply inclination
+      const y = z * Math.sin(inclination);
+      const zInclined = z * Math.cos(inclination);
+      points.push([x, y, zInclined]);
+    }
+    return points;
+  }, [semiMajorAxis, eccentricity, inclination]);
+
   useFrame((state, delta) => {
     const speed = isPaused ? 0 : timeSpeed;
     if (groupRef.current) {
       setAngle(prev => prev + delta * orbitSpeed * speed);
-      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
-      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
-      groupRef.current.position.y = Math.sin(angle * 2) * 0.3;
+      // Calculate position on elliptical orbit
+      const r = (semiMajorAxis * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(angle));
+      const x = r * Math.cos(angle);
+      const z = r * Math.sin(angle);
+      // Apply inclination
+      groupRef.current.position.x = x;
+      groupRef.current.position.y = z * Math.sin(inclination);
+      groupRef.current.position.z = z * Math.cos(inclination);
     }
     if (meshRef.current) {
       meshRef.current.rotation.x += 0.008 * speed;
@@ -422,9 +447,14 @@ const Asteroid3D = ({
 
   return (
     <>
-      <Ring args={[orbitRadius - 0.03, orbitRadius + 0.03, 128]} rotation={[-Math.PI / 2, 0, 0]}>
-        <meshBasicMaterial color={isSelected ? threatColor : asteroidProps.color} transparent opacity={isSelected ? 0.3 : 0.06} side={THREE.DoubleSide} />
-      </Ring>
+      {/* Elliptical orbit path */}
+      <Line 
+        points={orbitPoints} 
+        color={isSelected ? threatColor : asteroidProps.color} 
+        transparent 
+        opacity={isSelected ? 0.4 : 0.12}
+        lineWidth={1}
+      />
       
       <group ref={groupRef}>
         <mesh
