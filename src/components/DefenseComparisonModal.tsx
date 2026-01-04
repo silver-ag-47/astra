@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Asteroid, DefenseStrategy, defenseStrategies, calculateImpactEnergy, calculateDamageRadius } from '@/data/asteroids';
-import { Shield, Skull, CheckCircle, XCircle, Zap, Clock, DollarSign, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Shield, Skull, CheckCircle, XCircle, Zap, Clock, DollarSign, TrendingDown, AlertTriangle, Eye, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DefenseComparisonModalProps {
@@ -57,6 +57,7 @@ const formatNumber = (num: number): string => {
 
 const DefenseComparisonModal = ({ asteroid, isVisible, onClose }: DefenseComparisonModalProps) => {
   const [selectedStrategy, setSelectedStrategy] = useState<DefenseStrategy>(defenseStrategies[0]);
+  const [previewStrategy, setPreviewStrategy] = useState<DefenseStrategy | null>(null);
   
   if (!isVisible) return null;
   
@@ -103,20 +104,147 @@ const DefenseComparisonModal = ({ asteroid, isVisible, onClose }: DefenseCompari
           <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Select Defense Strategy</p>
           <div className="flex gap-2 flex-wrap">
             {defenseStrategies.map((strategy) => (
-              <button
-                key={strategy.id}
-                onClick={() => setSelectedStrategy(strategy)}
-                className={`px-4 py-2 border transition-colors ${
-                  selectedStrategy.id === strategy.id
-                    ? 'bg-cyan-500 border-cyan-400 text-black font-bold'
-                    : 'bg-transparent border-white/30 text-white hover:border-cyan-400'
-                }`}
-              >
-                <span className="font-mono text-xs">{strategy.code}</span>
-                <span className="ml-2 text-sm">{strategy.name}</span>
-              </button>
+              <div key={strategy.id} className="flex gap-1">
+                <button
+                  onClick={() => setSelectedStrategy(strategy)}
+                  className={`px-4 py-2 border transition-colors ${
+                    selectedStrategy.id === strategy.id
+                      ? 'bg-cyan-500 border-cyan-400 text-black font-bold'
+                      : 'bg-transparent border-white/30 text-white hover:border-cyan-400'
+                  }`}
+                >
+                  <span className="font-mono text-xs">{strategy.code}</span>
+                  <span className="ml-2 text-sm">{strategy.name}</span>
+                </button>
+                <button
+                  onClick={() => setPreviewStrategy(previewStrategy?.id === strategy.id ? null : strategy)}
+                  className={`px-2 border transition-colors ${
+                    previewStrategy?.id === strategy.id
+                      ? 'bg-purple-500 border-purple-400 text-white'
+                      : 'bg-transparent border-white/30 text-gray-400 hover:border-purple-400 hover:text-purple-400'
+                  }`}
+                  title={`Preview ${strategy.name}`}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
             ))}
           </div>
+          
+          {/* Strategy Preview Panel */}
+          {previewStrategy && (
+            <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 animate-fade-in">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="text-lg font-bold text-purple-400">{previewStrategy.name}</h4>
+                  <p className="text-xs text-gray-400 font-mono">{previewStrategy.code} System</p>
+                </div>
+                <button 
+                  onClick={() => setPreviewStrategy(null)}
+                  className="text-gray-500 hover:text-white"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-300 mb-4">{previewStrategy.description}</p>
+              
+              {/* Stats Row */}
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="p-2 bg-black/30 border border-white/10">
+                  <p className="text-[10px] text-gray-500 uppercase">Success Rate</p>
+                  <p className="text-lg font-bold text-green-400 font-mono">{(previewStrategy.successRate * 100).toFixed(0)}%</p>
+                </div>
+                <div className="p-2 bg-black/30 border border-white/10">
+                  <p className="text-[10px] text-gray-500 uppercase">Lead Time</p>
+                  <p className="text-lg font-bold text-amber-400 font-mono">{previewStrategy.leadTime} yrs</p>
+                </div>
+                <div className="p-2 bg-black/30 border border-white/10">
+                  <p className="text-[10px] text-gray-500 uppercase">Cost</p>
+                  <p className="text-lg font-bold text-cyan-400 font-mono">${previewStrategy.costBillion}B</p>
+                </div>
+                <div className="p-2 bg-black/30 border border-white/10">
+                  <p className="text-[10px] text-gray-500 uppercase">Tech Level</p>
+                  <p className="text-lg font-bold text-purple-400 font-mono">TRL {previewStrategy.techReadiness}</p>
+                </div>
+              </div>
+              
+              {/* Effectiveness by Size */}
+              <div className="mb-4">
+                <p className="text-[10px] text-gray-500 uppercase mb-2">Effectiveness by Asteroid Size</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 bg-black/30 border border-white/10">
+                    <p className="text-[10px] text-gray-400">Small (&lt;100m)</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-gray-700">
+                        <div className="h-full bg-green-500" style={{ width: `${previewStrategy.effectiveness.small * 100}%` }} />
+                      </div>
+                      <span className="text-xs text-green-400 font-mono">{(previewStrategy.effectiveness.small * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-black/30 border border-white/10">
+                    <p className="text-[10px] text-gray-400">Medium (100-500m)</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-gray-700">
+                        <div className="h-full bg-amber-500" style={{ width: `${previewStrategy.effectiveness.medium * 100}%` }} />
+                      </div>
+                      <span className="text-xs text-amber-400 font-mono">{(previewStrategy.effectiveness.medium * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-black/30 border border-white/10">
+                    <p className="text-[10px] text-gray-400">Large (&gt;500m)</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-gray-700">
+                        <div className="h-full bg-red-500" style={{ width: `${previewStrategy.effectiveness.large * 100}%` }} />
+                      </div>
+                      <span className="text-xs text-red-400 font-mono">{(previewStrategy.effectiveness.large * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Pros & Cons */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-green-500 uppercase mb-2 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Advantages
+                  </p>
+                  <ul className="space-y-1">
+                    {previewStrategy.pros.map((pro, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">•</span>
+                        {pro}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[10px] text-red-500 uppercase mb-2 flex items-center gap-1">
+                    <X className="w-3 h-3" /> Disadvantages
+                  </p>
+                  <ul className="space-y-1">
+                    {previewStrategy.cons.map((con, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-start gap-2">
+                        <span className="text-red-500 mt-0.5">•</span>
+                        {con}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Select Button */}
+              <button
+                onClick={() => {
+                  setSelectedStrategy(previewStrategy);
+                  setPreviewStrategy(null);
+                }}
+                className="mt-4 w-full py-2 bg-purple-500 hover:bg-purple-400 text-black font-bold text-sm transition-colors"
+              >
+                SELECT {previewStrategy.code}
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Comparison Grid */}
