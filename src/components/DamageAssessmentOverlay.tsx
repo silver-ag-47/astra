@@ -128,13 +128,13 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
       />
       
       {/* Assessment Panel */}
-      <div className={`relative bg-background/95 border-2 ${getSeverityColor()} rounded-lg p-6 max-w-2xl w-full mx-4 animate-scale-in shadow-2xl`}>
+      <div className={`relative bg-black border-2 ${getSeverityColor()} p-6 max-w-2xl w-full mx-4 animate-scale-in shadow-2xl`}>
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6 border-b border-border/50 pb-4">
-          <AlertTriangle className="w-8 h-8 text-destructive animate-pulse" />
+        <div className="flex items-center gap-3 mb-6 border-b border-white/20 pb-4">
+          <AlertTriangle className="w-8 h-8 text-red-500 animate-pulse" />
           <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-wider">DAMAGE ASSESSMENT</h2>
-            <p className="text-muted-foreground text-sm font-mono">
+            <h2 className="text-2xl font-bold text-white tracking-wider">DAMAGE ASSESSMENT</h2>
+            <p className="text-gray-400 text-sm font-mono">
               IMPACT: {asteroid.name} ({asteroid.diameter}m @ {asteroid.velocity} km/s)
             </p>
           </div>
@@ -143,10 +143,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {/* Casualties */}
-          <div className={`p-4 rounded-lg border border-red-500/30 bg-red-500/5 transition-all duration-300 ${animationPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-red-500/30 bg-red-500/10 transition-all duration-300 ${animationPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Skull className="w-5 h-5 text-red-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Est. Casualties</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Est. Casualties</span>
             </div>
             <p className="text-2xl font-bold text-red-500 font-mono">
               {formatNumber(damageData.casualties.min)} - {formatNumber(damageData.casualties.max)}
@@ -155,10 +155,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
           </div>
           
           {/* Destruction Radius */}
-          <div className={`p-4 rounded-lg border border-orange-500/30 bg-orange-500/5 transition-all duration-300 ${animationPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-orange-500/30 bg-orange-500/10 transition-all duration-300 ${animationPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Destruction Radius</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Destruction Radius</span>
             </div>
             <p className="text-2xl font-bold text-orange-500 font-mono">
               {damageData.destructionRadius.toFixed(1)} km
@@ -167,10 +167,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
           </div>
           
           {/* Impact Energy */}
-          <div className={`p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 transition-all duration-300 ${animationPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-amber-500/30 bg-amber-500/10 transition-all duration-300 ${animationPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Thermometer className="w-5 h-5 text-amber-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Impact Energy</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Impact Energy</span>
             </div>
             <p className="text-2xl font-bold text-amber-500 font-mono">
               {damageData.impactEnergy.toFixed(2)} MT
@@ -179,10 +179,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
           </div>
           
           {/* Crater */}
-          <div className={`p-4 rounded-lg border border-cyan-500/30 bg-cyan-500/5 transition-all duration-300 ${animationPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-cyan-500/30 bg-cyan-500/10 transition-all duration-300 ${animationPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Wind className="w-5 h-5 text-cyan-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Crater Diameter</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Crater Diameter</span>
             </div>
             <p className="text-2xl font-bold text-cyan-500 font-mono">
               {damageData.craterDiameter.toFixed(1)} km
@@ -190,10 +190,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
           </div>
           
           {/* Fireball */}
-          <div className={`p-4 rounded-lg border border-rose-500/30 bg-rose-500/5 transition-all duration-300 ${animationPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-rose-500/30 bg-rose-500/10 transition-all duration-300 ${animationPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-5 h-5 text-rose-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Fireball Radius</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Fireball Radius</span>
             </div>
             <p className="text-2xl font-bold text-rose-500 font-mono">
               {damageData.fireballRadius.toFixed(1)} km
@@ -201,10 +201,10 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
           </div>
           
           {/* Shockwave */}
-          <div className={`p-4 rounded-lg border border-purple-500/30 bg-purple-500/5 transition-all duration-300 ${animationPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`p-4 border border-purple-500/30 bg-purple-500/10 transition-all duration-300 ${animationPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="flex items-center gap-2 mb-2">
               <Wind className="w-5 h-5 text-purple-500" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Shockwave Radius</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider">Shockwave Radius</span>
             </div>
             <p className="text-2xl font-bold text-purple-500 font-mono">
               {damageData.shockwaveRadius.toFixed(1)} km
@@ -215,14 +215,14 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
         {/* Environmental Effects */}
         <div className={`transition-all duration-500 ${animationPhase >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="flex items-center gap-2 mb-3">
-            <CloudRain className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground uppercase tracking-wider">Environmental Effects</span>
+            <CloudRain className="w-5 h-5 text-gray-400" />
+            <span className="text-sm text-gray-400 uppercase tracking-wider">Environmental Effects</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {damageData.environmentalEffects.map((effect, i) => (
               <span 
                 key={i}
-                className="px-3 py-1.5 bg-muted/50 border border-border rounded-full text-xs text-foreground"
+                className="px-3 py-1.5 bg-white/10 border border-white/20 text-xs text-white"
               >
                 {effect}
               </span>
@@ -233,7 +233,7 @@ const DamageAssessmentOverlay = ({ asteroid, isVisible, onClose }: DamageAssessm
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="mt-6 w-full py-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg text-primary font-semibold tracking-wider transition-colors"
+          className="mt-6 w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold tracking-wider transition-colors"
         >
           ACKNOWLEDGE
         </button>
