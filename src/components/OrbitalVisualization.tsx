@@ -666,6 +666,184 @@ const Asteroid3D = ({
   );
 };
 
+// Comet with glowing tail
+const Comet = ({ 
+  isPaused, 
+  timeSpeed,
+  earthOrbitRadius 
+}: { 
+  isPaused: boolean; 
+  timeSpeed: number;
+  earthOrbitRadius: number;
+}) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const nucleusRef = useRef<THREE.Mesh>(null);
+  const tailRef = useRef<THREE.Mesh>(null);
+  const [angle, setAngle] = useState(0);
+  
+  // Highly elliptical comet orbit (like Halley's comet)
+  const semiMajorAxis = earthOrbitRadius * 2.8;
+  const eccentricity = 0.85;
+  const inclination = 25 * Math.PI / 180;
+  const orbitSpeed = 0.02;
+
+  // Generate comet orbit path
+  const orbitPoints = useMemo(() => {
+    const points: [number, number, number][] = [];
+    const segments = 256;
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      const r = (semiMajorAxis * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(theta));
+      const x = r * Math.cos(theta);
+      const z = r * Math.sin(theta);
+      const y = z * Math.sin(inclination);
+      const zInclined = z * Math.cos(inclination);
+      points.push([x, y, zInclined]);
+    }
+    return points;
+  }, [semiMajorAxis, eccentricity, inclination]);
+
+  // Create tail geometry
+  const tailGeometry = useMemo(() => {
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(1.5, 0.2, 0),
+      new THREE.Vector3(4, 0.5, 0)
+    );
+    const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.15, 8, false);
+    return tubeGeo;
+  }, []);
+
+  // Create dust tail geometry (wider, slightly different direction)
+  const dustTailGeometry = useMemo(() => {
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(1.2, -0.1, 0.3),
+      new THREE.Vector3(3, -0.3, 0.8)
+    );
+    return new THREE.TubeGeometry(curve, 24, 0.25, 8, false);
+  }, []);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * orbitSpeed * speed);
+      
+      // Calculate position on elliptical orbit
+      const r = (semiMajorAxis * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(angle));
+      const x = r * Math.cos(angle);
+      const z = r * Math.sin(angle);
+      const y = z * Math.sin(inclination);
+      const zInclined = z * Math.cos(inclination);
+      
+      groupRef.current.position.set(x, y, zInclined);
+      
+      // Point tail away from sun (opposite direction of position)
+      const tailAngle = Math.atan2(zInclined, x);
+      groupRef.current.rotation.y = tailAngle;
+      
+      // Tail length and intensity based on distance from sun
+      const distanceFromSun = Math.sqrt(x * x + y * y + zInclined * zInclined);
+      const tailScale = Math.max(0.3, Math.min(2.5, 8 / distanceFromSun));
+      
+      if (tailRef.current) {
+        tailRef.current.scale.x = tailScale;
+        tailRef.current.scale.y = 0.8 + Math.sin(state.clock.elapsedTime * 3) * 0.2;
+      }
+    }
+    
+    if (nucleusRef.current) {
+      nucleusRef.current.rotation.x += 0.02 * speed;
+      nucleusRef.current.rotation.y += 0.03 * speed;
+    }
+  });
+
+  return (
+    <>
+      {/* Comet orbit path */}
+      <Line 
+        points={orbitPoints} 
+        color="#00ffff" 
+        transparent 
+        opacity={0.15}
+        lineWidth={1}
+        dashed
+        dashSize={0.5}
+        gapSize={0.3}
+      />
+      
+      <group ref={groupRef}>
+        {/* Nucleus (irregular rocky/icy body) */}
+        <mesh ref={nucleusRef}>
+          <dodecahedronGeometry args={[0.12, 0]} />
+          <meshStandardMaterial 
+            color="#2a2a3a"
+            roughness={0.95}
+            metalness={0.05}
+            emissive="#1a1a2a"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        {/* Coma (gas cloud around nucleus) */}
+        <Sphere args={[0.35, 24, 24]}>
+          <meshBasicMaterial 
+            color="#88ccff" 
+            transparent 
+            opacity={0.25}
+          />
+        </Sphere>
+        <Sphere args={[0.5, 16, 16]}>
+          <meshBasicMaterial 
+            color="#aaddff" 
+            transparent 
+            opacity={0.12}
+          />
+        </Sphere>
+        
+        {/* Ion tail (blue, straight, points directly away from sun) */}
+        <mesh ref={tailRef} geometry={tailGeometry}>
+          <meshBasicMaterial 
+            color="#00ccff" 
+            transparent 
+            opacity={0.4}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        
+        {/* Ion tail glow */}
+        <mesh geometry={tailGeometry} scale={[1, 1.5, 1.5]}>
+          <meshBasicMaterial 
+            color="#00aaff" 
+            transparent 
+            opacity={0.15}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        
+        {/* Dust tail (yellowish, curved) */}
+        <mesh geometry={dustTailGeometry}>
+          <meshBasicMaterial 
+            color="#ffeeaa" 
+            transparent 
+            opacity={0.25}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        
+        {/* Bright point at nucleus */}
+        <pointLight intensity={0.5} distance={3} color="#88ccff" />
+        
+        {/* Label */}
+        <Html position={[0, -0.8, 0]} center>
+          <span className="text-[7px] text-cyan-300 font-mono whitespace-nowrap">☄️ COMET</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
 const CameraController = ({ zoom }: { zoom: number }) => {
   const { camera } = useThree();
   
@@ -738,6 +916,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           <TexturedEarth orbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedMars orbitRadius={earthOrbitRadius * 1.52} isPaused={isPaused} timeSpeed={timeSpeed} />
           <AsteroidBelt earthOrbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <Comet isPaused={isPaused} timeSpeed={timeSpeed} earthOrbitRadius={earthOrbitRadius} />
           
           {asteroids.map((asteroid, index) => (
             <Asteroid3D
