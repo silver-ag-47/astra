@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,6 +7,7 @@ import { MissionSpacecraft } from './mission/MissionSpacecraft';
 import { Explosion, LaserBeam, GravityField, TrajectoryLine } from './mission/MissionEffects';
 import { Asteroid, DefenseStrategy } from '@/data/asteroids';
 import { useMissionSounds } from '@/hooks/useMissionSounds';
+import TexturedEarth from './mission/TexturedEarth';
 
 interface MissionOrbitalSimulationProps {
   asteroid: Asteroid;
@@ -15,37 +16,17 @@ interface MissionOrbitalSimulationProps {
   onShowImpact: () => void;
 }
 
-// Earth component
+// Earth component - now uses TexturedEarth
 const Earth = ({ position }: { position: [number, number, number] }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const cloudsRef = useRef<THREE.Mesh>(null);
-  
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.001;
-    }
-    if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += 0.0012;
-    }
-  });
-
   return (
-    <group position={position}>
-      <mesh ref={meshRef}>
+    <Suspense fallback={
+      <mesh position={position}>
         <sphereGeometry args={[0.3, 32, 32]} />
         <meshStandardMaterial color="#4a90d9" />
       </mesh>
-      <mesh ref={cloudsRef}>
-        <sphereGeometry args={[0.31, 32, 32]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.3} />
-      </mesh>
-      {/* Atmosphere glow */}
-      <mesh>
-        <sphereGeometry args={[0.35, 32, 32]} />
-        <meshBasicMaterial color="#6eb5ff" transparent opacity={0.2} side={THREE.BackSide} />
-      </mesh>
-      <pointLight position={[0, 0, 0]} color="#6eb5ff" intensity={0.5} distance={2} />
-    </group>
+    }>
+      <TexturedEarth position={position} radius={0.3} />
+    </Suspense>
   );
 };
 
