@@ -140,7 +140,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
           <p className="text-[10px] text-muted-foreground tracking-wider mb-3">
             Hackathon Project · Planetary Defense Initiative
           </p>
-          <div className="flex items-center justify-center gap-4 text-[10px] font-mono">
+          <div className="flex items-center gap-4 text-[10px] font-mono mb-3">
             <span className="text-accent-cyan">NASA</span>
             <span className="text-border">·</span>
             <span className="text-accent-green">ESA</span>
@@ -151,6 +151,12 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
             <span className="text-border">·</span>
             <span className="text-accent-cyan">Roscosmos</span>
           </div>
+          <button
+            onClick={onEnter}
+            className="text-[10px] font-mono text-accent-green border border-accent-green/50 px-3 py-1.5 hover:bg-accent-green/10 transition-colors"
+          >
+            Initiate Mission →
+          </button>
         </div>
       </div>
     </div>
