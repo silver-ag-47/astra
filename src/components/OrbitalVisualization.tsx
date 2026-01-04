@@ -1077,6 +1077,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       className={`relative w-full h-full overflow-hidden bg-[#010108] border border-border transition-all duration-300 ${
         isFullscreen ? 'min-h-screen' : 'min-h-[300px]'
       }`}
+      style={{ isolation: 'isolate' }}
     >
       <Canvas camera={{ position: [0, 20, 40], fov: 50 }} dpr={[1, 2]}>
         <Suspense fallback={<LoadingFallback />}>
@@ -1118,15 +1119,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       </Canvas>
 
       {/* UI Overlays */}
-      <div className="absolute top-2 left-2 z-50 pointer-events-auto">
+      <div className="absolute top-2 left-2 z-[100] pointer-events-auto">
         <h2 className="font-display text-sm text-white">Orbital Tracking</h2>
         <p className="text-[9px] text-gray-500 tracking-wider">NASA TEXTURED 3D MODEL</p>
       </div>
 
       {/* Top Right Controls - Stacked in a column */}
-      <div className="absolute top-2 right-2 z-50 pointer-events-auto flex gap-2">
+      <div className="absolute top-2 right-2 z-[100] pointer-events-auto flex gap-2" style={{ pointerEvents: 'auto' }}>
         {/* Time Control */}
-        <div className="border border-white/20 bg-black/90 p-3">
+        <div className="border border-white/20 bg-black/90 p-3 pointer-events-auto">
           <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
           
           {/* Main playback controls */}
@@ -1195,7 +1196,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
 
         {/* Asteroid Selector */}
-        <div className="border border-white/20 bg-black/90 p-2">
+        <div className="border border-white/20 bg-black/90 p-2 pointer-events-auto">
           <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
             <Target className="w-3 h-3" /> Track Asteroid
           </p>
@@ -1290,7 +1291,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
 
         {/* Zoom Controls */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 pointer-events-auto">
           <Button variant="outline" size="icon" onClick={toggleFullscreen}
             className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
             {isFullscreen ? <Minimize2 className="h-3 w-3 text-white" /> : <Maximize2 className="h-3 w-3 text-white" />}
@@ -1312,8 +1313,8 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       </div>
 
       {/* Bottom left panels - stacked vertically */}
-      <div className="absolute bottom-2 left-2 z-10 flex flex-col gap-2">
-        <div className="border border-white/20 bg-black/90 p-3">
+      <div className="absolute bottom-2 left-2 z-[100] flex flex-col gap-2 pointer-events-auto">
+        <div className="border border-white/20 bg-black/90 p-3 pointer-events-auto">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Controls</p>
           <div className="space-y-1.5 text-sm text-gray-300">
             <div className="flex items-center gap-2">🖱️ <span>Drag → Rotate</span></div>
@@ -1332,7 +1333,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         </div>
       </div>
 
-      <div className="absolute bottom-2 right-2 border border-white/20 bg-black/90 p-3 z-10">
+      <div className="absolute bottom-2 right-2 border border-white/20 bg-black/90 p-3 z-[100] pointer-events-auto">
         <p className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Asteroid Types</p>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8B4513' }} /><span className="text-sm text-gray-300">S-type (Silicate)</span></div>
