@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ThemeToggle from './ThemeToggle';
 
 interface SystemHeaderProps {
   onNavigate: (page: string) => void;
@@ -60,13 +61,16 @@ const SystemHeader = ({ onNavigate, currentPage }: SystemHeaderProps) => {
           ))}
         </nav>
 
-        {/* Right: Clock */}
-        <div className="text-right">
-          <div className="font-mono text-xs text-foreground countdown-display">
-            {formatTime(time)}
-          </div>
-          <div className="text-[9px] text-muted-foreground tracking-wider">
-            Mission Clock
+        {/* Right: Clock and Theme Toggle */}
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <div className="text-right">
+            <div className="font-mono text-xs text-foreground countdown-display">
+              {formatTime(time)}
+            </div>
+            <div className="text-[9px] text-muted-foreground tracking-wider">
+              Mission Clock
+            </div>
           </div>
         </div>
       </div>
