@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-
+import ThemeToggle from './ThemeToggle';
 interface LandingPageProps {
   onEnter: () => void;
 }
@@ -163,7 +163,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         </div>
 
         {/* Made with love credit */}
-        <div className="absolute bottom-4 right-6">
+        <div className="absolute bottom-4 right-6 flex items-center gap-4">
           <a
             href="https://discord.com/users/xmen0325"
             target="_blank"
@@ -172,6 +172,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
           >
             Made with <span className="text-accent-red">❤️</span> by Silver
           </a>
+          <ThemeToggle />
         </div>
       </div>
     </div>
