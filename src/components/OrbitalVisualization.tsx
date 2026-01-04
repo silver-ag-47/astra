@@ -1040,7 +1040,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             <SelectTrigger className="w-40 h-7 bg-black/80 border-white/20 text-[10px] text-white">
               <SelectValue placeholder="Select asteroid..." />
             </SelectTrigger>
-            <SelectContent className="bg-black/95 border-white/20 z-[100]">
+            <SelectContent className="bg-black/95 border-white/20 z-[9999]" container={containerRef.current}>
               <SelectItem value="none" className="text-[10px] text-gray-400">
                 None (Show All)
               </SelectItem>
