@@ -3,9 +3,10 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home, Eye } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home, Eye, Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import ImpactSimulation from './ImpactSimulation';
 import {
   Select,
   SelectContent,
@@ -228,7 +229,17 @@ const TexturedVenus = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
 };
 
 // High-fidelity textured Earth with clouds and Moon
-const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+const TexturedEarth = ({ 
+  orbitRadius, 
+  isPaused, 
+  timeSpeed,
+  onPositionUpdate 
+}: { 
+  orbitRadius: number; 
+  isPaused: boolean; 
+  timeSpeed: number;
+  onPositionUpdate?: (position: THREE.Vector3) => void;
+}) => {
   const earthRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
@@ -257,8 +268,15 @@ const TexturedEarth = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numb
     if (moonRef.current) moonRef.current.rotation.y += 0.001 * speed;
     if (groupRef.current) {
       setAngle(prev => prev + delta * 0.1 * speed);
-      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
-      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+      const x = Math.cos(angle) * orbitRadius;
+      const z = Math.sin(angle) * orbitRadius;
+      groupRef.current.position.x = x;
+      groupRef.current.position.z = z;
+      
+      // Report Earth position for impact simulation
+      if (onPositionUpdate) {
+        onPositionUpdate(new THREE.Vector3(x, 0, z));
+      }
     }
     if (moonGroupRef.current) {
       setMoonAngle(prev => prev + delta * 0.35 * speed);
@@ -1250,6 +1268,8 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [overviewMode, setOverviewMode] = useState(false);
+  const [isSimulatingImpact, setIsSimulatingImpact] = useState(false);
+  const [earthPosition, setEarthPosition] = useState(new THREE.Vector3(10, 0, 0));
   const containerRef = useRef<HTMLDivElement>(null);
 
   const minZoom = 0.25;
@@ -1295,7 +1315,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
           <TexturedSun />
           <TexturedMercury orbitRadius={earthOrbitRadius * 0.39} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedVenus orbitRadius={earthOrbitRadius * 0.72} isPaused={isPaused} timeSpeed={timeSpeed} />
-          <TexturedEarth orbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <TexturedEarth 
+            orbitRadius={earthOrbitRadius} 
+            isPaused={isPaused || isSimulatingImpact} 
+            timeSpeed={timeSpeed}
+            onPositionUpdate={setEarthPosition}
+          />
           <TexturedMars orbitRadius={earthOrbitRadius * 1.52} isPaused={isPaused} timeSpeed={timeSpeed} />
           <AsteroidBelt earthOrbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedJupiter orbitRadius={earthOrbitRadius * 5.2} isPaused={isPaused} timeSpeed={timeSpeed} />
@@ -1320,6 +1345,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
               isCustom={asteroid.isCustom}
             />
           ))}
+          
+          {/* Impact Simulation */}
+          {isSimulatingImpact && selectedAsteroid && (
+            <ImpactSimulation
+              asteroid={selectedAsteroid}
+              earthPosition={earthPosition}
+              onComplete={() => setIsSimulatingImpact(false)}
+            />
+          )}
           
           <CameraController zoom={zoom} focusTarget={overviewMode ? null : selectedAsteroid} />
         </Suspense>
@@ -1493,6 +1527,25 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
                   Reset
                 </Button>
               </div>
+              
+              {/* Impact Simulation Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setIsSimulatingImpact(true);
+                  setIsPaused(true);
+                }}
+                disabled={isSimulatingImpact}
+                className={`w-full h-7 mt-2 text-[9px] ${
+                  isSimulatingImpact 
+                    ? 'bg-red-500/30 border-red-500/60 text-red-400 cursor-not-allowed' 
+                    : 'bg-red-500/20 border-red-500/40 hover:bg-red-500/30 hover:border-red-400 text-red-400'
+                }`}
+              >
+                <Crosshair className="w-3 h-3 mr-1" />
+                {isSimulatingImpact ? 'Simulating...' : 'Simulate Impact'}
+              </Button>
             </div>
           )}
         </div>
