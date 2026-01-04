@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Asteroid, DefenseStrategy, defenseStrategies, calculateImpactEnergy, calculateDamageRadius } from '@/data/asteroids';
 import { Shield, Skull, CheckCircle, XCircle, Zap, Clock, DollarSign, TrendingDown, AlertTriangle, Eye, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DefenseAnimation from './DefenseAnimation';
 
 interface DefenseComparisonModalProps {
   asteroid: Asteroid;
@@ -149,7 +150,12 @@ const DefenseComparisonModal = ({ asteroid, isVisible, onClose }: DefenseCompari
               
               <p className="text-sm text-gray-300 mb-4">{previewStrategy.description}</p>
               
-              {/* Stats Row */}
+              {/* Strategy Animation */}
+              <div className="mb-4">
+                <p className="text-[10px] text-gray-500 uppercase mb-2">How It Works</p>
+                <DefenseAnimation strategyCode={previewStrategy.code} />
+              </div>
+              
               <div className="grid grid-cols-4 gap-3 mb-4">
                 <div className="p-2 bg-black/30 border border-white/10">
                   <p className="text-[10px] text-gray-500 uppercase">Success Rate</p>
