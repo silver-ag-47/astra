@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Asteroid, DefenseStrategy } from '@/data/asteroids';
 import CRTOverlay from '@/components/CRTOverlay';
 import SystemHeader from '@/components/SystemHeader';
@@ -7,8 +7,11 @@ import Dashboard from '@/components/Dashboard';
 import StrategiesPage from '@/components/StrategiesPage';
 import MissionSimulation from '@/components/MissionSimulation';
 import ResultsPage from '@/components/ResultsPage';
+import Tutorial from '@/components/Tutorial';
 
 type Page = 'landing' | 'dashboard' | 'strategies' | 'simulation' | 'results';
+
+const TUTORIAL_COMPLETED_KEY = 'astra_tutorial_completed';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
@@ -16,9 +19,24 @@ const Index = () => {
   const [selectedStrategy, setSelectedStrategy] = useState<DefenseStrategy | null>(null);
   const [missionSuccess, setMissionSuccess] = useState(false);
   const [deflectionAmount, setDeflectionAmount] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const handleEnterCommand = () => {
+    const tutorialCompleted = localStorage.getItem(TUTORIAL_COMPLETED_KEY);
+    if (!tutorialCompleted) {
+      setShowTutorial(true);
+    }
     setCurrentPage('dashboard');
+  };
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem(TUTORIAL_COMPLETED_KEY, 'true');
+    setShowTutorial(false);
+  };
+
+  const handleTutorialSkip = () => {
+    localStorage.setItem(TUTORIAL_COMPLETED_KEY, 'true');
+    setShowTutorial(false);
   };
 
   const handleStartMission = (asteroid: Asteroid) => {
@@ -108,6 +126,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <CRTOverlay />
+      
+      {showTutorial && (
+        <Tutorial 
+          onComplete={handleTutorialComplete}
+          onSkip={handleTutorialSkip}
+        />
+      )}
       
       {currentPage !== 'landing' && (
         <SystemHeader 
