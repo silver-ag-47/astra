@@ -10,6 +10,9 @@ export interface Asteroid {
   mass: number; // kg (calculated from diameter assuming density of 2000 kg/m³)
   discoveryDate: string;
   orbitalPeriod: number; // years
+  semiMajorAxis: number; // AU (astronomical units from Sun)
+  eccentricity: number; // orbital eccentricity (0 = circular, closer to 1 = more elliptical)
+  inclination: number; // degrees from ecliptic plane
   torinoScale: number;
   palermoScale: number;
 }
@@ -62,6 +65,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(55),
     discoveryDate: "2024-12-27",
     orbitalPeriod: 2.47,
+    semiMajorAxis: 1.83, // AU - Apollo-type orbit
+    eccentricity: 0.52,
+    inclination: 3.4,
     torinoScale: 3,
     palermoScale: -1.8,
   },
@@ -77,6 +83,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(370),
     discoveryDate: "2004-06-19",
     orbitalPeriod: 0.89,
+    semiMajorAxis: 0.92, // AU - Aten-type, inside Earth orbit
+    eccentricity: 0.19,
+    inclination: 3.3,
     torinoScale: 0,
     palermoScale: -3.2,
   },
@@ -92,6 +101,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(50),
     discoveryDate: "2023-02-26",
     orbitalPeriod: 1.59,
+    semiMajorAxis: 1.36, // AU - Apollo-type
+    eccentricity: 0.29,
+    inclination: 0.6,
     torinoScale: 1,
     palermoScale: -2.4,
   },
@@ -107,6 +119,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(50),
     discoveryDate: "2021-08-28",
     orbitalPeriod: 1.23,
+    semiMajorAxis: 1.15, // AU - Apollo-type
+    eccentricity: 0.22,
+    inclination: 8.5,
     torinoScale: 1,
     palermoScale: -2.8,
   },
@@ -122,6 +137,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(2),
     discoveryDate: "2018-11-03",
     orbitalPeriod: 2.0,
+    semiMajorAxis: 1.59, // AU - Apollo-type
+    eccentricity: 0.43,
+    inclination: 2.1,
     torinoScale: 0,
     palermoScale: -8.5,
   },
@@ -137,6 +155,9 @@ export const asteroids: Asteroid[] = [
     mass: calculateMass(492),
     discoveryDate: "1999-09-11",
     orbitalPeriod: 1.20,
+    semiMajorAxis: 1.13, // AU - Apollo-type
+    eccentricity: 0.20,
+    inclination: 6.0,
     torinoScale: 0,
     palermoScale: -1.7,
   },
