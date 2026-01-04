@@ -604,9 +604,16 @@ const Asteroid3D = ({
       const x = r * Math.cos(angle);
       const z = r * Math.sin(angle);
       // Apply inclination
-      groupRef.current.position.x = x;
-      groupRef.current.position.y = z * Math.sin(inclination);
-      groupRef.current.position.z = z * Math.cos(inclination);
+      const posX = x;
+      const posY = z * Math.sin(inclination);
+      const posZ = z * Math.cos(inclination);
+      
+      groupRef.current.position.x = posX;
+      groupRef.current.position.y = posY;
+      groupRef.current.position.z = posZ;
+      
+      // Store position for camera focus
+      asteroidPositions.set(asteroid.id, new THREE.Vector3(posX, posY, posZ));
     }
     if (meshRef.current) {
       meshRef.current.rotation.x += 0.008 * speed;
@@ -656,13 +663,13 @@ const Asteroid3D = ({
         
         {(isSelected || isHovered) && (
           <Html position={[0, -size - 0.8, 0]} center style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
-            <div className="bg-black/95 border px-2 py-1.5 min-w-[110px] pointer-events-none" style={{ borderColor: threatColor }}>
+            <div className="bg-black/60 backdrop-blur-sm border px-2 py-1.5 min-w-[110px] pointer-events-none" style={{ borderColor: threatColor }}>
               <div className="text-[10px] font-mono font-bold mb-0.5" style={{ color: threatColor }}>{asteroid.name}</div>
               <div className="text-[8px] text-gray-400 space-y-0.5">
-                <div className="flex justify-between gap-3"><span>Diameter:</span><span className="text-white">{asteroid.diameter}m</span></div>
-                <div className="flex justify-between gap-3"><span>Orbit:</span><span className="text-white">{semiMajorAxis.toFixed(2)} AU</span></div>
-                <div className="flex justify-between gap-3"><span>Period:</span><span className="text-white">{asteroid.orbitalPeriod.toFixed(2)}y</span></div>
-                <div className="flex justify-between gap-3"><span>Velocity:</span><span className="text-white">{asteroid.velocity} km/s</span></div>
+                <div className="flex justify-between gap-3"><span>Diameter:</span><span className="text-white/90">{asteroid.diameter}m</span></div>
+                <div className="flex justify-between gap-3"><span>Orbit:</span><span className="text-white/90">{semiMajorAxis.toFixed(2)} AU</span></div>
+                <div className="flex justify-between gap-3"><span>Period:</span><span className="text-white/90">{asteroid.orbitalPeriod.toFixed(2)}y</span></div>
+                <div className="flex justify-between gap-3"><span>Velocity:</span><span className="text-white/90">{asteroid.velocity} km/s</span></div>
                 <div className="flex justify-between gap-3"><span>Torino:</span><span style={{ color: threatColor }}>{asteroid.torinoScale}</span></div>
               </div>
             </div>
@@ -851,16 +858,112 @@ const Comet = ({
   );
 };
 
-const CameraController = ({ zoom }: { zoom: number }) => {
-  const { camera } = useThree();
-  
-  useEffect(() => {
-    const distance = 35 / zoom;
-    camera.position.set(0, distance * 0.7, distance);
-    camera.lookAt(0, 0, 0);
-  }, [zoom, camera]);
+// Store asteroid positions for camera focus
+const asteroidPositions = new Map<string, THREE.Vector3>();
 
-  return <OrbitControls enablePan enableZoom enableRotate minDistance={5} maxDistance={100} zoomSpeed={0.8} rotateSpeed={0.5} />;
+const CameraController = ({ 
+  zoom, 
+  focusTarget 
+}: { 
+  zoom: number; 
+  focusTarget: Asteroid | null;
+}) => {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
+  const targetPosition = useRef(new THREE.Vector3(0, 0, 0));
+  const isAnimating = useRef(false);
+  const animationProgress = useRef(0);
+  const startCameraPos = useRef(new THREE.Vector3());
+  const endCameraPos = useRef(new THREE.Vector3());
+  const startTarget = useRef(new THREE.Vector3());
+  const endTarget = useRef(new THREE.Vector3());
+  
+  // Trigger animation when focus target changes
+  useEffect(() => {
+    if (focusTarget) {
+      const asteroidPos = asteroidPositions.get(focusTarget.id);
+      if (asteroidPos) {
+        isAnimating.current = true;
+        animationProgress.current = 0;
+        startCameraPos.current.copy(camera.position);
+        startTarget.current.copy(targetPosition.current);
+        
+        // Calculate end position - offset from asteroid
+        const distance = 8;
+        endCameraPos.current.set(
+          asteroidPos.x + distance * 0.5,
+          asteroidPos.y + distance * 0.4,
+          asteroidPos.z + distance
+        );
+        endTarget.current.copy(asteroidPos);
+      }
+    } else {
+      // Reset to default view
+      isAnimating.current = true;
+      animationProgress.current = 0;
+      startCameraPos.current.copy(camera.position);
+      startTarget.current.copy(targetPosition.current);
+      
+      const distance = 35 / zoom;
+      endCameraPos.current.set(0, distance * 0.7, distance);
+      endTarget.current.set(0, 0, 0);
+    }
+  }, [focusTarget, camera, zoom]);
+  
+  // Default zoom behavior (only when not focused)
+  useEffect(() => {
+    if (!focusTarget && !isAnimating.current) {
+      const distance = 35 / zoom;
+      camera.position.set(0, distance * 0.7, distance);
+      camera.lookAt(0, 0, 0);
+    }
+  }, [zoom, camera, focusTarget]);
+  
+  // Animate camera
+  useFrame((state, delta) => {
+    if (isAnimating.current) {
+      animationProgress.current += delta * 1.5; // Animation speed
+      const t = Math.min(animationProgress.current, 1);
+      // Smooth easing
+      const eased = 1 - Math.pow(1 - t, 3);
+      
+      camera.position.lerpVectors(startCameraPos.current, endCameraPos.current, eased);
+      targetPosition.current.lerpVectors(startTarget.current, endTarget.current, eased);
+      camera.lookAt(targetPosition.current);
+      
+      if (controlsRef.current) {
+        controlsRef.current.target.copy(targetPosition.current);
+      }
+      
+      if (t >= 1) {
+        isAnimating.current = false;
+      }
+    }
+    
+    // Follow focused asteroid
+    if (focusTarget && !isAnimating.current) {
+      const asteroidPos = asteroidPositions.get(focusTarget.id);
+      if (asteroidPos) {
+        // Smoothly follow the asteroid
+        targetPosition.current.lerp(asteroidPos, delta * 2);
+        
+        const distance = 8;
+        const idealCamPos = new THREE.Vector3(
+          asteroidPos.x + distance * 0.5,
+          asteroidPos.y + distance * 0.4,
+          asteroidPos.z + distance
+        );
+        camera.position.lerp(idealCamPos, delta * 1.5);
+        camera.lookAt(targetPosition.current);
+        
+        if (controlsRef.current) {
+          controlsRef.current.target.copy(targetPosition.current);
+        }
+      }
+    }
+  });
+
+  return <OrbitControls ref={controlsRef} enablePan enableZoom enableRotate minDistance={5} maxDistance={100} zoomSpeed={0.8} rotateSpeed={0.5} />;
 };
 
 // Loading fallback
@@ -940,7 +1043,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             />
           ))}
           
-          <CameraController zoom={zoom} />
+          <CameraController zoom={zoom} focusTarget={selectedAsteroid} />
         </Suspense>
       </Canvas>
 
