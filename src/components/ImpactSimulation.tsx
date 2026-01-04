@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, calculateImpactEnergy, calculateDamageRadius } from '@/data/asteroids';
+import { useImpactSounds } from '@/hooks/useImpactSounds';
 
 interface ImpactSimulationProps {
   asteroid: Asteroid;
@@ -98,12 +99,23 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
   const explosionRef = useRef<THREE.Group>(null);
   const shockwaveRef = useRef<THREE.Mesh>(null);
   const startTime = useRef(Date.now());
+  const soundsTriggered = useRef({ approach: false, impact: false, explosion: false, rumble: false });
+  
+  const { playAtmosphericEntry, playExplosion, playRumble, playImpact, initAudioContext } = useImpactSounds();
   
   const impactEnergy = calculateImpactEnergy(asteroid.mass, asteroid.velocity);
   const damageRadius = calculateDamageRadius(impactEnergy);
   
   // Normalize explosion scale based on energy (log scale for visual effect)
   const explosionScale = Math.min(Math.max(Math.log10(impactEnergy + 1) * 0.5, 0.3), 3);
+  
+  // Sound intensity based on impact energy
+  const soundIntensity = Math.min(Math.max(Math.log10(impactEnergy + 1) * 0.3, 0.5), 1.5);
+  
+  // Initialize audio context on mount (requires user interaction first)
+  useEffect(() => {
+    initAudioContext();
+  }, [initAudioContext]);
   
   // Color based on energy level
   const getExplosionColor = () => {
@@ -120,6 +132,12 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
     
     switch (phase) {
       case 'approach':
+        // Trigger atmospheric entry sound once at the start
+        if (!soundsTriggered.current.approach) {
+          soundsTriggered.current.approach = true;
+          playAtmosphericEntry(2);
+        }
+        
         // Asteroid approaches Earth over 2 seconds
         const approachProgress = Math.min(elapsed / 2, 1);
         setProgress(approachProgress);
@@ -146,6 +164,12 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
         break;
         
       case 'impact':
+        // Trigger impact sound once
+        if (!soundsTriggered.current.impact) {
+          soundsTriggered.current.impact = true;
+          playImpact();
+        }
+        
         // Brief flash - 0.1 seconds
         const impactProgress = Math.min(elapsed / 0.1, 1);
         setProgress(impactProgress);
@@ -157,6 +181,12 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
         break;
         
       case 'explosion':
+        // Trigger explosion sound once
+        if (!soundsTriggered.current.explosion) {
+          soundsTriggered.current.explosion = true;
+          playExplosion(soundIntensity);
+        }
+        
         // Explosion expands - 1.5 seconds
         const explosionProgress = Math.min(elapsed / 1.5, 1);
         setProgress(explosionProgress);
@@ -182,6 +212,12 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
         break;
         
       case 'aftermath':
+        // Trigger rumble sound once
+        if (!soundsTriggered.current.rumble) {
+          soundsTriggered.current.rumble = true;
+          playRumble(1.5);
+        }
+        
         // Fade out - 1.5 seconds
         const aftermathProgress = Math.min(elapsed / 1.5, 1);
         setProgress(aftermathProgress);
