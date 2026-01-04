@@ -122,7 +122,7 @@ const TexturedSun = () => {
       <Sphere args={[4.2, 32, 32]}>
         <meshBasicMaterial color="#FFF8DC" transparent opacity={0.08} />
       </Sphere>
-      <pointLight intensity={3} distance={150} decay={2} color="#FFF5E0" />
+      <pointLight intensity={8} distance={300} decay={1.5} color="#FFF5E0" />
       <Html position={[0, -3.8, 0]} center>
         <span className="text-[10px] text-amber-400 font-mono tracking-widest font-bold">☉ SUN</span>
       </Html>
@@ -533,7 +533,9 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           <color attach="background" args={['#010108']} />
           <fog attach="fog" args={['#010108', 60, 180]} />
           
-          <ambientLight intensity={0.06} />
+          <ambientLight intensity={0.8} />
+          <directionalLight position={[50, 30, 50]} intensity={1.5} color="#ffffff" />
+          <directionalLight position={[-30, -20, -30]} intensity={0.4} color="#4a90d9" />
           
           <Stars radius={250} depth={120} count={10000} factor={5} saturation={0.15} fade speed={0.2} />
           
