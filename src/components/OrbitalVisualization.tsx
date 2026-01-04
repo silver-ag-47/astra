@@ -947,10 +947,12 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       {/* UI Overlays */}
       <div className="absolute top-2 left-2 z-50 pointer-events-auto">
         <h2 className="font-display text-sm text-white">Orbital Tracking</h2>
-        <p className="text-[9px] text-gray-500 tracking-wider mb-2">NASA TEXTURED 3D MODEL</p>
-        
-        {/* Asteroid Selector */}
-        <div className="border border-white/20 bg-black/90 p-2 rounded">
+        <p className="text-[9px] text-gray-500 tracking-wider">NASA TEXTURED 3D MODEL</p>
+      </div>
+
+      {/* Asteroid Selector - Right Side */}
+      <div className="absolute top-2 right-10 z-50 pointer-events-auto">
+        <div className="border border-white/20 bg-black/90 p-2">
           <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
             <Target className="w-3 h-3" /> Track Asteroid
           </p>
@@ -968,7 +970,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             <SelectTrigger className="w-40 h-7 bg-black/80 border-white/20 text-[10px] text-white">
               <SelectValue placeholder="Select asteroid..." />
             </SelectTrigger>
-            <SelectContent className="bg-black/95 border-white/20">
+            <SelectContent className="bg-black/95 border-white/20 z-[100]">
               <SelectItem value="none" className="text-[10px] text-gray-400">
                 None (Show All)
               </SelectItem>
