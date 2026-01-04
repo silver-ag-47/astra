@@ -8,7 +8,7 @@ interface DefenseAnimationProps {
 
 const DefenseAnimation = ({ strategyCode }: DefenseAnimationProps) => {
   const [frame, setFrame] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const { playKineticImpactor, playGravityTractor, playNuclearDeflection, playIonBeam, stopSound } = useDefenseSounds();
   
   useEffect(() => {
