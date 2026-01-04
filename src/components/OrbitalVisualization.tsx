@@ -539,6 +539,201 @@ const TexturedMars = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: numbe
   );
 };
 
+// Textured Jupiter
+const TexturedJupiter = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  const jupiterTexture = useLoader(THREE.TextureLoader, '/textures/jupiter.jpg');
+
+  useMemo(() => configureTexture(jupiterTexture), [jupiterTexture]);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    if (meshRef.current) meshRef.current.rotation.y += 0.006 * speed; // Jupiter rotates fast
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * 0.0084 * speed); // ~11.86 year orbit
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+  });
+
+  return (
+    <>
+      <Ring args={[orbitRadius - 0.08, orbitRadius + 0.08, 256]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#d4a574" transparent opacity={0.08} side={THREE.DoubleSide} />
+      </Ring>
+      <group ref={groupRef}>
+        <group rotation={[3.1 * Math.PI / 180, 0, 0]}>
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[1.4, 64, 64]} />
+            <meshStandardMaterial map={jupiterTexture} roughness={0.7} metalness={0.1} />
+          </mesh>
+          {/* Faint atmosphere */}
+          <Sphere args={[1.48, 32, 32]}>
+            <meshBasicMaterial color="#e8d4b8" transparent opacity={0.08} />
+          </Sphere>
+        </group>
+        <Html position={[0, -1.8, 0]} center>
+          <span className="text-[8px] text-orange-300 font-mono">JUPITER</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
+// Textured Saturn with rings
+const TexturedSaturn = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  const saturnTexture = useLoader(THREE.TextureLoader, '/textures/saturn.jpg');
+  const ringTexture = useLoader(THREE.TextureLoader, '/textures/saturn_ring.png');
+
+  useMemo(() => {
+    configureTexture(saturnTexture);
+    ringTexture.wrapS = THREE.ClampToEdgeWrapping;
+    ringTexture.wrapT = THREE.ClampToEdgeWrapping;
+  }, [saturnTexture, ringTexture]);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    if (meshRef.current) meshRef.current.rotation.y += 0.005 * speed;
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * 0.0034 * speed); // ~29.5 year orbit
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+  });
+
+  return (
+    <>
+      <Ring args={[orbitRadius - 0.08, orbitRadius + 0.08, 256]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#e6d5a8" transparent opacity={0.06} side={THREE.DoubleSide} />
+      </Ring>
+      <group ref={groupRef}>
+        <group rotation={[26.7 * Math.PI / 180, 0, 0]}>
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[1.1, 64, 64]} />
+            <meshStandardMaterial map={saturnTexture} roughness={0.75} metalness={0.1} />
+          </mesh>
+          {/* Saturn's rings */}
+          <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[1.4, 2.4, 64]} />
+            <meshBasicMaterial 
+              map={ringTexture} 
+              transparent 
+              opacity={0.85} 
+              side={THREE.DoubleSide}
+              color="#f5e6c8"
+            />
+          </mesh>
+          {/* Inner ring */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[1.25, 1.38, 64]} />
+            <meshBasicMaterial color="#c9b896" transparent opacity={0.4} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+        <Html position={[0, -2.8, 0]} center>
+          <span className="text-[8px] text-yellow-200 font-mono">SATURN</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
+// Textured Uranus
+const TexturedUranus = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  const uranusTexture = useLoader(THREE.TextureLoader, '/textures/uranus.jpg');
+
+  useMemo(() => configureTexture(uranusTexture), [uranusTexture]);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    if (meshRef.current) meshRef.current.rotation.y -= 0.004 * speed; // Retrograde rotation
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * 0.0012 * speed); // ~84 year orbit
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+  });
+
+  return (
+    <>
+      <Ring args={[orbitRadius - 0.06, orbitRadius + 0.06, 256]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#7dd3fc" transparent opacity={0.05} side={THREE.DoubleSide} />
+      </Ring>
+      <group ref={groupRef}>
+        <group rotation={[97.8 * Math.PI / 180, 0, 0]}> {/* Extreme axial tilt */}
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.65, 64, 64]} />
+            <meshStandardMaterial map={uranusTexture} roughness={0.8} metalness={0.1} />
+          </mesh>
+          {/* Faint atmosphere */}
+          <Sphere args={[0.7, 32, 32]}>
+            <meshBasicMaterial color="#a5f3fc" transparent opacity={0.12} />
+          </Sphere>
+          {/* Faint ring system */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.85, 1.0, 48]} />
+            <meshBasicMaterial color="#7dd3fc" transparent opacity={0.15} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+        <Html position={[0, -1.2, 0]} center>
+          <span className="text-[7px] text-cyan-300 font-mono">URANUS</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
+// Textured Neptune
+const TexturedNeptune = ({ orbitRadius, isPaused, timeSpeed }: { orbitRadius: number; isPaused: boolean; timeSpeed: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  const neptuneTexture = useLoader(THREE.TextureLoader, '/textures/neptune.jpg');
+
+  useMemo(() => configureTexture(neptuneTexture), [neptuneTexture]);
+
+  useFrame((state, delta) => {
+    const speed = isPaused ? 0 : timeSpeed;
+    if (meshRef.current) meshRef.current.rotation.y += 0.005 * speed;
+    if (groupRef.current) {
+      setAngle(prev => prev + delta * 0.0006 * speed); // ~165 year orbit
+      groupRef.current.position.x = Math.cos(angle) * orbitRadius;
+      groupRef.current.position.z = Math.sin(angle) * orbitRadius;
+    }
+  });
+
+  return (
+    <>
+      <Ring args={[orbitRadius - 0.06, orbitRadius + 0.06, 256]} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.05} side={THREE.DoubleSide} />
+      </Ring>
+      <group ref={groupRef}>
+        <group rotation={[28.3 * Math.PI / 180, 0, 0]}>
+          <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+            <sphereGeometry args={[0.6, 64, 64]} />
+            <meshStandardMaterial map={neptuneTexture} roughness={0.8} metalness={0.1} />
+          </mesh>
+          {/* Atmosphere */}
+          <Sphere args={[0.65, 32, 32]}>
+            <meshBasicMaterial color="#60a5fa" transparent opacity={0.15} />
+          </Sphere>
+        </group>
+        <Html position={[0, -1.0, 0]} center>
+          <span className="text-[7px] text-blue-400 font-mono">NEPTUNE</span>
+        </Html>
+      </group>
+    </>
+  );
+};
+
 // Pulsing tracking indicator for overview mode
 const TrackingIndicator = ({ size, color }: { size: number; color: string }) => {
   const ringRef = useRef<THREE.Mesh>(null);
@@ -1082,13 +1277,13 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       <Canvas camera={{ position: [0, 20, 40], fov: 50 }} dpr={[1, 2]}>
         <Suspense fallback={<LoadingFallback />}>
           <color attach="background" args={['#010108']} />
-          <fog attach="fog" args={['#010108', 60, 180]} />
+          <fog attach="fog" args={['#010108', 100, 400]} />
           
           <ambientLight intensity={0.8} />
           <directionalLight position={[50, 30, 50]} intensity={1.5} color="#ffffff" />
           <directionalLight position={[-30, -20, -30]} intensity={0.4} color="#4a90d9" />
           
-          <Stars radius={250} depth={120} count={10000} factor={5} saturation={0.15} fade speed={0.2} />
+          <Stars radius={400} depth={200} count={15000} factor={6} saturation={0.15} fade speed={0.2} />
           
           <TexturedSun />
           <TexturedMercury orbitRadius={earthOrbitRadius * 0.39} isPaused={isPaused} timeSpeed={timeSpeed} />
@@ -1096,6 +1291,10 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
           <TexturedEarth orbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
           <TexturedMars orbitRadius={earthOrbitRadius * 1.52} isPaused={isPaused} timeSpeed={timeSpeed} />
           <AsteroidBelt earthOrbitRadius={earthOrbitRadius} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <TexturedJupiter orbitRadius={earthOrbitRadius * 5.2} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <TexturedSaturn orbitRadius={earthOrbitRadius * 9.5} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <TexturedUranus orbitRadius={earthOrbitRadius * 19.2} isPaused={isPaused} timeSpeed={timeSpeed} />
+          <TexturedNeptune orbitRadius={earthOrbitRadius * 30} isPaused={isPaused} timeSpeed={timeSpeed} />
           <Comet isPaused={isPaused} timeSpeed={timeSpeed} earthOrbitRadius={earthOrbitRadius} />
           
           {asteroids.map((asteroid, index) => (
