@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -963,18 +963,71 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         <div className="text-center text-[8px] text-gray-400 mt-0.5">{Math.round(zoom * 100)}%</div>
       </div>
 
-      <div className="absolute top-14 left-2 z-10 border border-white/20 bg-black/90 p-2">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Button variant="outline" size="icon" onClick={() => setIsPaused(!isPaused)}
-            className="w-5 h-5 bg-black/80 border-white/20 hover:bg-white/10">
-            {isPaused ? <Play className="h-2.5 w-2.5 text-green-400" /> : <Pause className="h-2.5 w-2.5 text-amber-400" />}
+      <div className="absolute top-14 left-2 z-10 border border-white/20 bg-black/90 p-3 rounded">
+        <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
+        
+        {/* Main playback controls */}
+        <div className="flex items-center gap-1 mb-2">
+          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(0.25)}
+            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+            <SkipBack className="h-3 w-3 text-white" />
           </Button>
-          <span className="text-[9px] text-cyan-400 font-mono">{getSpeedLabel()}</span>
+          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.max(0.25, prev - 0.25))}
+            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+            <Rewind className="h-3 w-3 text-white" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => setIsPaused(!isPaused)}
+            className={`w-8 h-8 border-2 hover:bg-white/10 ${isPaused ? 'border-green-500 bg-green-500/10' : 'border-amber-500 bg-amber-500/10'}`}>
+            {isPaused ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-amber-400" />}
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.min(8, prev + 0.25))}
+            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+            <FastForward className="h-3 w-3 text-white" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(8)}
+            className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+            <SkipForward className="h-3 w-3 text-white" />
+          </Button>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="text-[7px] text-gray-500">S</span>
-          <Slider value={[timeSpeed]} onValueChange={(v) => setTimeSpeed(v[0])} min={0.25} max={4} step={0.25} className="w-14" />
-          <span className="text-[7px] text-gray-500">F</span>
+
+        {/* Speed indicator */}
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span className={`text-sm font-mono font-bold ${isPaused ? 'text-amber-400' : 'text-cyan-400'}`}>
+            {isPaused ? '⏸ PAUSED' : `▶ ${timeSpeed}×`}
+          </span>
+        </div>
+
+        {/* Speed slider */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[8px] text-gray-500">0.25×</span>
+          <Slider 
+            value={[timeSpeed]} 
+            onValueChange={(v) => setTimeSpeed(v[0])} 
+            min={0.25} 
+            max={8} 
+            step={0.25} 
+            className="w-20"
+          />
+          <span className="text-[8px] text-gray-500">8×</span>
+        </div>
+
+        {/* Speed presets */}
+        <div className="flex gap-1">
+          {[0.5, 1, 2, 4].map(speed => (
+            <Button 
+              key={speed}
+              variant="outline" 
+              size="sm"
+              onClick={() => { setTimeSpeed(speed); setIsPaused(false); }}
+              className={`h-5 px-2 text-[9px] font-mono ${
+                timeSpeed === speed && !isPaused
+                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' 
+                  : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-cyan-400'
+              }`}
+            >
+              {speed}×
+            </Button>
+          ))}
         </div>
       </div>
 
