@@ -3,9 +3,16 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface OrbitalVisualizationProps {
   selectedAsteroid: Asteroid | null;
@@ -940,7 +947,75 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
       {/* UI Overlays */}
       <div className="absolute top-2 left-2 z-10">
         <h2 className="font-display text-sm text-white">Orbital Tracking</h2>
-        <p className="text-[9px] text-gray-500 tracking-wider">NASA TEXTURED 3D MODEL</p>
+        <p className="text-[9px] text-gray-500 tracking-wider mb-2">NASA TEXTURED 3D MODEL</p>
+        
+        {/* Asteroid Selector */}
+        <div className="border border-white/20 bg-black/90 p-2 rounded">
+          <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <Target className="w-3 h-3" /> Track Asteroid
+          </p>
+          <Select 
+            value={selectedAsteroid?.id || ''} 
+            onValueChange={(id) => {
+              if (id === 'none') {
+                onSelectAsteroid(null as any);
+              } else {
+                const asteroid = asteroids.find(a => a.id === id);
+                if (asteroid) onSelectAsteroid(asteroid);
+              }
+            }}
+          >
+            <SelectTrigger className="w-40 h-7 bg-black/80 border-white/20 text-[10px] text-white">
+              <SelectValue placeholder="Select asteroid..." />
+            </SelectTrigger>
+            <SelectContent className="bg-black/95 border-white/20">
+              <SelectItem value="none" className="text-[10px] text-gray-400">
+                None (Show All)
+              </SelectItem>
+              {asteroids.map(asteroid => {
+                const threatLevel = asteroid.torinoScale >= 3 ? 'high' : asteroid.torinoScale >= 1 ? 'medium' : 'low';
+                const threatColor = threatLevel === 'high' ? 'text-red-400' : threatLevel === 'medium' ? 'text-amber-400' : 'text-green-400';
+                return (
+                  <SelectItem 
+                    key={asteroid.id} 
+                    value={asteroid.id}
+                    className="text-[10px]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        threatLevel === 'high' ? 'bg-red-500' : 
+                        threatLevel === 'medium' ? 'bg-amber-500' : 'bg-green-500'
+                      }`} />
+                      <span className="text-white">{asteroid.name}</span>
+                      <span className={`${threatColor} text-[8px]`}>T{asteroid.torinoScale}</span>
+                    </span>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          
+          {selectedAsteroid && (
+            <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+              <div className="flex justify-between text-[8px]">
+                <span className="text-gray-500">Diameter:</span>
+                <span className="text-white font-mono">{selectedAsteroid.diameter}m</span>
+              </div>
+              <div className="flex justify-between text-[8px]">
+                <span className="text-gray-500">Velocity:</span>
+                <span className="text-white font-mono">{selectedAsteroid.velocity} km/s</span>
+              </div>
+              <div className="flex justify-between text-[8px]">
+                <span className="text-gray-500">Impact Prob:</span>
+                <span className="text-amber-400 font-mono">{(selectedAsteroid.impactProbability * 100).toFixed(4)}%</span>
+              </div>
+              <div className="flex justify-between text-[8px]">
+                <span className="text-gray-500">Orbit Period:</span>
+                <span className="text-cyan-400 font-mono">{selectedAsteroid.orbitalPeriod.toFixed(2)} yrs</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
@@ -963,7 +1038,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         <div className="text-center text-[8px] text-gray-400 mt-0.5">{Math.round(zoom * 100)}%</div>
       </div>
 
-      <div className="absolute top-14 left-2 z-10 border border-white/20 bg-black/90 p-3 rounded">
+      <div className="absolute top-2 right-44 z-10 border border-white/20 bg-black/90 p-3 rounded">
         <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
         
         {/* Main playback controls */}
