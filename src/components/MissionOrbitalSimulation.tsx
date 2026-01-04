@@ -143,7 +143,8 @@ const MissionScene = ({
   setDistanceToTarget,
   timeRemaining,
   setTimeRemaining,
-  sounds
+  sounds,
+  isMuted
 }: {
   asteroid: Asteroid;
   strategy: DefenseStrategy;
@@ -164,6 +165,7 @@ const MissionScene = ({
   timeRemaining: number;
   setTimeRemaining: (t: number) => void;
   sounds: ReturnType<typeof useMissionSounds>;
+  isMuted: boolean;
 }) => {
   const earthPosition: [number, number, number] = [0, 0, 0];
   const [showExplosion, setShowExplosion] = useState(false);
@@ -224,7 +226,7 @@ const MissionScene = ({
 
       case 'launch': {
         // Play launch sound at start of launch phase
-        if (!launchSoundPlayed.current) {
+        if (!launchSoundPlayed.current && !isMuted) {
           launchSoundPlayed.current = true;
           sounds.playLaunch();
         }
@@ -256,7 +258,7 @@ const MissionScene = ({
         if (strategy.code === 'LASR' && elapsed > 1) {
           setShowLaser(true);
           // Play laser beam sound
-          if (!laserSoundPlayed.current) {
+          if (!laserSoundPlayed.current && !isMuted) {
             laserSoundPlayed.current = true;
             sounds.playLaserBeam();
           }
@@ -323,10 +325,12 @@ const MissionScene = ({
           }
           
           // Play impact sound based on strategy
-          if (strategy.code === 'NUKE') {
-            sounds.playNuclearExplosion();
-          } else {
-            sounds.playImpact();
+          if (!isMuted) {
+            if (strategy.code === 'NUKE') {
+              sounds.playNuclearExplosion();
+            } else {
+              sounds.playImpact();
+            }
           }
           
           if (success) {
@@ -343,10 +347,12 @@ const MissionScene = ({
             phaseStartTime.current = Date.now();
             
             // Play success or failure sound
-            if (success) {
-              sounds.playSuccess();
-            } else {
-              sounds.playFailure();
+            if (!isMuted) {
+              if (success) {
+                sounds.playSuccess();
+              } else {
+                sounds.playFailure();
+              }
             }
           }, 2000);
         }
@@ -495,12 +501,27 @@ export const MissionOrbitalSimulation = ({
   const [distanceToEarth, setDistanceToEarth] = useState(8);
   const [distanceToTarget, setDistanceToTarget] = useState(8);
   const [timeRemaining, setTimeRemaining] = useState(30);
+  const [isMuted, setIsMuted] = useState(false);
   
   const sounds = useMissionSounds();
 
+  const handleToggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      if (newMuted) {
+        sounds.stopAllSounds();
+      } else {
+        sounds.playSpaceAmbience();
+      }
+      return newMuted;
+    });
+  }, [sounds]);
+
   // Start space ambience on mount
   useEffect(() => {
-    sounds.playSpaceAmbience();
+    if (!isMuted) {
+      sounds.playSpaceAmbience();
+    }
     return () => {
       sounds.stopAllSounds();
     };
@@ -538,6 +559,7 @@ export const MissionOrbitalSimulation = ({
           timeRemaining={timeRemaining}
           setTimeRemaining={setTimeRemaining}
           sounds={sounds}
+          isMuted={isMuted}
         />
       </Canvas>
       
@@ -551,6 +573,8 @@ export const MissionOrbitalSimulation = ({
         distanceToTarget={distanceToTarget}
         timeRemaining={timeRemaining}
         successProbability={successProbability}
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
       />
     </div>
   );

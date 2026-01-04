@@ -1,4 +1,4 @@
-import { Shield, Target, Rocket, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Target, Rocket, AlertTriangle, CheckCircle, XCircle, Volume2, VolumeX } from 'lucide-react';
 
 export type MissionPhase = 'approach' | 'launch' | 'intercept' | 'outcome';
 export type MissionOutcome = 'pending' | 'success' | 'failure';
@@ -13,6 +13,8 @@ interface MissionHUDProps {
   distanceToTarget: number;
   timeRemaining: number;
   successProbability: number;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
 }
 
 export const MissionHUD = ({
@@ -24,7 +26,9 @@ export const MissionHUD = ({
   distanceToEarth,
   distanceToTarget,
   timeRemaining,
-  successProbability
+  successProbability,
+  isMuted = false,
+  onToggleMute
 }: MissionHUDProps) => {
   const getPhaseLabel = () => {
     switch (phase) {
@@ -79,12 +83,29 @@ export const MissionHUD = ({
             </div>
           </div>
 
-          {/* Success probability */}
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground font-mono">SUCCESS PROBABILITY</div>
-            <div className={`font-mono text-xl ${successProbability > 70 ? 'text-green-400' : successProbability > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-              {successProbability.toFixed(0)}%
+          {/* Success probability + Sound toggle */}
+          <div className="flex items-start gap-4">
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground font-mono">SUCCESS PROBABILITY</div>
+              <div className={`font-mono text-xl ${successProbability > 70 ? 'text-green-400' : successProbability > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                {successProbability.toFixed(0)}%
+              </div>
             </div>
+            
+            {/* Sound toggle button */}
+            {onToggleMute && (
+              <button
+                onClick={onToggleMute}
+                className="pointer-events-auto p-2 bg-black/60 backdrop-blur-sm border border-border rounded-lg hover:bg-black/80 transition-colors"
+                title={isMuted ? 'Unmute sounds' : 'Mute sounds'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-cyan-400" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
