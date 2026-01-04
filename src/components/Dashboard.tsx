@@ -96,6 +96,10 @@ const Dashboard = ({ onStartMission }: DashboardProps) => {
                     setSelectedAsteroid(asteroid);
                     setShowThreatModal(true);
                   }}
+                  onInitiateMission={() => {
+                    setSelectedAsteroid(asteroid);
+                    onStartMission(asteroid);
+                  }}
                   isSelected={selectedAsteroid?.id === asteroid.id}
                 />
                 {asteroid.isCustom && (
