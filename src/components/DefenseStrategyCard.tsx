@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DefenseStrategy } from '@/data/asteroids';
 import { Eye, Check, X } from 'lucide-react';
+import DefenseAnimation from './DefenseAnimation';
 
 interface DefenseStrategyCardProps {
   strategy: DefenseStrategy;
@@ -156,6 +157,12 @@ const DefenseStrategyCard = ({ strategy, isSelected, onSelect, asteroidSize }: D
           </div>
           
           <p className="text-sm text-muted-foreground mb-4">{strategy.description}</p>
+          
+          {/* Strategy Animation */}
+          <div className="mb-4">
+            <p className="text-[10px] text-muted-foreground uppercase mb-2">How It Works</p>
+            <DefenseAnimation strategyCode={strategy.code} />
+          </div>
           
           {/* Effectiveness by Size */}
           <div className="mb-4">
