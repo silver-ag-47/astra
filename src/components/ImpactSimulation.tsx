@@ -9,8 +9,100 @@ interface ImpactSimulationProps {
   asteroid: Asteroid;
   earthPosition: THREE.Vector3;
   onComplete: () => void;
+  onShowDamageAssessment: () => void;
   earthRadius?: number;
 }
+
+// Floating debris for damaged Earth phase
+const DamagedEarthDebris = ({ 
+  earthPosition, 
+  earthRadius,
+  progress 
+}: { 
+  earthPosition: THREE.Vector3; 
+  earthRadius: number;
+  progress: number;
+}) => {
+  const debrisRef = useRef<THREE.Group>(null);
+  const debrisData = useRef<{ 
+    positions: THREE.Vector3[]; 
+    velocities: THREE.Vector3[];
+    rotations: THREE.Euler[];
+    scales: number[];
+  }>({ positions: [], velocities: [], rotations: [], scales: [] });
+  
+  useEffect(() => {
+    const count = 40;
+    const positions: THREE.Vector3[] = [];
+    const velocities: THREE.Vector3[] = [];
+    const rotations: THREE.Euler[] = [];
+    const scales: number[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      // Start from Earth surface
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI * 0.6; // Concentrate on impact hemisphere
+      const surfacePos = new THREE.Vector3(
+        Math.sin(phi) * Math.cos(theta),
+        Math.sin(phi) * Math.sin(theta),
+        Math.cos(phi)
+      ).multiplyScalar(earthRadius * 1.1);
+      
+      positions.push(earthPosition.clone().add(surfacePos));
+      
+      // Outward velocity
+      velocities.push(surfacePos.clone().normalize().multiplyScalar(0.3 + Math.random() * 0.4));
+      rotations.push(new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI));
+      scales.push(0.03 + Math.random() * 0.08);
+    }
+    
+    debrisData.current = { positions, velocities, rotations, scales };
+  }, [earthPosition, earthRadius]);
+  
+  useFrame((state, delta) => {
+    if (!debrisRef.current) return;
+    
+    debrisRef.current.children.forEach((child, i) => {
+      if (i >= debrisData.current.positions.length) return;
+      
+      const pos = debrisData.current.positions[i];
+      const vel = debrisData.current.velocities[i];
+      
+      // Move outward then slow down
+      pos.add(vel.clone().multiplyScalar(delta * (1 - progress * 0.5)));
+      child.position.copy(pos);
+      
+      // Rotate
+      child.rotation.x += delta * 0.5;
+      child.rotation.y += delta * 0.3;
+      
+      // Fade out near end
+      const material = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      if (material) {
+        material.opacity = 1 - progress;
+      }
+    });
+  });
+  
+  return (
+    <group ref={debrisRef}>
+      {debrisData.current.scales.length === 0 && 
+        Array.from({ length: 40 }).map((_, i) => (
+          <mesh key={i} position={earthPosition.toArray()}>
+            <dodecahedronGeometry args={[0.03 + Math.random() * 0.05, 0]} />
+            <meshBasicMaterial color="#8B4513" transparent opacity={1} />
+          </mesh>
+        ))
+      }
+      {debrisData.current.positions.map((pos, i) => (
+        <mesh key={i} position={pos.toArray()} scale={debrisData.current.scales[i]}>
+          <dodecahedronGeometry args={[1, 0]} />
+          <meshBasicMaterial color={i % 2 === 0 ? "#8B4513" : "#654321"} transparent opacity={1} />
+        </mesh>
+      ))}
+    </group>
+  );
+};
 
 // Particle system for debris
 const DebrisParticles = ({ 
@@ -91,15 +183,90 @@ const DebrisParticles = ({
   );
 };
 
+// Damaged Earth overlay effect
+const DamagedEarth = ({ 
+  earthPosition, 
+  earthRadius, 
+  progress,
+  explosionColor 
+}: { 
+  earthPosition: THREE.Vector3; 
+  earthRadius: number; 
+  progress: number;
+  explosionColor: string;
+}) => {
+  const crackRef = useRef<THREE.Group>(null);
+  
+  useFrame((state, delta) => {
+    if (crackRef.current) {
+      crackRef.current.rotation.y += delta * 0.1;
+    }
+  });
+  
+  return (
+    <group position={earthPosition.toArray()}>
+      {/* Damage glow on surface */}
+      <Sphere args={[earthRadius * 1.02, 32, 32]}>
+        <meshBasicMaterial 
+          color={explosionColor}
+          transparent 
+          opacity={0.4 * (1 - progress)}
+        />
+      </Sphere>
+      
+      {/* Smoke/dust cloud */}
+      <Sphere args={[earthRadius * 1.15, 16, 16]}>
+        <meshBasicMaterial 
+          color="#333333"
+          transparent 
+          opacity={0.3 * (1 - progress)}
+        />
+      </Sphere>
+      
+      {/* Impact scar glow */}
+      <group ref={crackRef}>
+        <mesh position={[earthRadius * 0.9, 0.2, 0.3]}>
+          <sphereGeometry args={[earthRadius * 0.3, 16, 16]} />
+          <meshBasicMaterial 
+            color="#ff4400"
+            transparent 
+            opacity={0.6 * (1 - progress)}
+          />
+        </mesh>
+        <pointLight 
+          position={[earthRadius * 0.9, 0.2, 0.3]} 
+          color="#ff6600" 
+          intensity={10 * (1 - progress)} 
+          distance={5}
+        />
+      </group>
+      
+      {/* Atmospheric disturbance rings */}
+      {[1.2, 1.4, 1.6].map((scale, i) => (
+        <mesh key={i} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[earthRadius * scale, earthRadius * scale * 1.05, 32]} />
+          <meshBasicMaterial 
+            color="#ff8844"
+            transparent 
+            opacity={0.2 * (1 - progress) * (1 - i * 0.2)}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
 // Main impact effect
-const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0.7 }: ImpactSimulationProps) => {
-  const [phase, setPhase] = useState<'approach' | 'impact' | 'explosion' | 'aftermath' | 'complete'>('approach');
+const ImpactSimulation = ({ asteroid, earthPosition, onComplete, onShowDamageAssessment, earthRadius = 0.7 }: ImpactSimulationProps) => {
+  const [phase, setPhase] = useState<'approach' | 'impact' | 'explosion' | 'aftermath' | 'damaged' | 'reset' | 'complete'>('approach');
   const [progress, setProgress] = useState(0);
   const asteroidRef = useRef<THREE.Group>(null);
   const explosionRef = useRef<THREE.Group>(null);
   const shockwaveRef = useRef<THREE.Mesh>(null);
   const startTime = useRef(Date.now());
   const soundsTriggered = useRef({ approach: false, impact: false, explosion: false, rumble: false });
+  const assessmentShown = useRef(false);
   
   const { playAtmosphericEntry, playExplosion, playRumble, playImpact, initAudioContext } = useImpactSounds();
   
@@ -218,8 +385,8 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
           playRumble(1.5);
         }
         
-        // Fade out - 1.5 seconds
-        const aftermathProgress = Math.min(elapsed / 1.5, 1);
+        // Fade out - 1 second then transition to damaged phase
+        const aftermathProgress = Math.min(elapsed / 1, 1);
         setProgress(aftermathProgress);
         
         if (explosionRef.current) {
@@ -227,6 +394,33 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
         }
         
         if (aftermathProgress >= 1) {
+          setPhase('damaged');
+          startTime.current = Date.now();
+          // Show damage assessment overlay
+          if (!assessmentShown.current) {
+            assessmentShown.current = true;
+            onShowDamageAssessment();
+          }
+        }
+        break;
+        
+      case 'damaged':
+        // Show damaged Earth with floating debris for 3 seconds
+        const damagedProgress = Math.min(elapsed / 3, 1);
+        setProgress(damagedProgress);
+        
+        if (damagedProgress >= 1) {
+          setPhase('reset');
+          startTime.current = Date.now();
+        }
+        break;
+        
+      case 'reset':
+        // Quick reset transition - 0.5 seconds
+        const resetProgress = Math.min(elapsed / 0.5, 1);
+        setProgress(resetProgress);
+        
+        if (resetProgress >= 1) {
           setPhase('complete');
           onComplete();
         }
@@ -348,6 +542,36 @@ const ImpactSimulation = ({ asteroid, earthPosition, onComplete, earthRadius = 0
             lifetime={3}
           />
         </>
+      )}
+      
+      {/* Damaged Earth Phase */}
+      {phase === 'damaged' && (
+        <>
+          <DamagedEarth 
+            earthPosition={earthPosition}
+            earthRadius={earthRadius}
+            progress={progress}
+            explosionColor={explosionColor}
+          />
+          <DamagedEarthDebris 
+            earthPosition={earthPosition}
+            earthRadius={earthRadius}
+            progress={progress}
+          />
+        </>
+      )}
+      
+      {/* Reset Phase - Flash to white then fade */}
+      {phase === 'reset' && (
+        <group position={earthPosition.toArray()}>
+          <Sphere args={[earthRadius * 2, 16, 16]}>
+            <meshBasicMaterial 
+              color="#ffffff" 
+              transparent 
+              opacity={0.5 * (1 - progress)}
+            />
+          </Sphere>
+        </group>
       )}
     </group>
   );

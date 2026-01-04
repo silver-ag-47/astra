@@ -7,6 +7,7 @@ import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, 
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import ImpactSimulation from './ImpactSimulation';
+import DamageAssessmentOverlay from './DamageAssessmentOverlay';
 import {
   Select,
   SelectContent,
@@ -1269,6 +1270,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [overviewMode, setOverviewMode] = useState(false);
   const [isSimulatingImpact, setIsSimulatingImpact] = useState(false);
+  const [showDamageAssessment, setShowDamageAssessment] = useState(false);
   const [earthPosition, setEarthPosition] = useState(new THREE.Vector3(10, 0, 0));
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1352,6 +1354,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
               asteroid={selectedAsteroid}
               earthPosition={earthPosition}
               onComplete={() => setIsSimulatingImpact(false)}
+              onShowDamageAssessment={() => setShowDamageAssessment(true)}
             />
           )}
           
@@ -1601,6 +1604,15 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
           <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#696969' }} /><span className="text-sm text-gray-300">X-type (Metallic)</span></div>
         </div>
       </div>
+      
+      {/* Damage Assessment Overlay */}
+      {selectedAsteroid && (
+        <DamageAssessmentOverlay
+          asteroid={selectedAsteroid}
+          isVisible={showDamageAssessment}
+          onClose={() => setShowDamageAssessment(false)}
+        />
+      )}
     </div>
   );
 };
