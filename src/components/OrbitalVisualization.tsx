@@ -950,8 +950,78 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
         <p className="text-[9px] text-gray-500 tracking-wider">NASA TEXTURED 3D MODEL</p>
       </div>
 
-      {/* Asteroid Selector - Right Side */}
-      <div className="absolute top-2 right-10 z-50 pointer-events-auto">
+      {/* Top Right Controls - Stacked in a column */}
+      <div className="absolute top-2 right-2 z-50 pointer-events-auto flex gap-2">
+        {/* Time Control */}
+        <div className="border border-white/20 bg-black/90 p-3">
+          <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
+          
+          {/* Main playback controls */}
+          <div className="flex items-center gap-1 mb-2">
+            <Button variant="outline" size="icon" onClick={() => setTimeSpeed(0.25)}
+              className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+              <SkipBack className="h-3 w-3 text-white" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.max(0.25, prev - 0.25))}
+              className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+              <Rewind className="h-3 w-3 text-white" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setIsPaused(!isPaused)}
+              className={`w-8 h-8 border-2 hover:bg-white/10 ${isPaused ? 'border-green-500 bg-green-500/10' : 'border-amber-500 bg-amber-500/10'}`}>
+              {isPaused ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-amber-400" />}
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.min(8, prev + 0.25))}
+              className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+              <FastForward className="h-3 w-3 text-white" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setTimeSpeed(8)}
+              className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
+              <SkipForward className="h-3 w-3 text-white" />
+            </Button>
+          </div>
+
+          {/* Speed indicator */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className={`text-sm font-mono font-bold ${isPaused ? 'text-amber-400' : 'text-cyan-400'}`}>
+              {isPaused ? '⏸ PAUSED' : `▶ ${timeSpeed}×`}
+            </span>
+          </div>
+
+          {/* Speed slider */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[8px] text-gray-500">0.25×</span>
+            <Slider 
+              value={[timeSpeed]} 
+              onValueChange={(v) => setTimeSpeed(v[0])} 
+              min={0.25} 
+              max={8} 
+              step={0.25} 
+              className="w-20"
+            />
+            <span className="text-[8px] text-gray-500">8×</span>
+          </div>
+
+          {/* Speed presets */}
+          <div className="flex gap-1">
+            {[0.5, 1, 2, 4].map(speed => (
+              <Button 
+                key={speed}
+                variant="outline" 
+                size="sm"
+                onClick={() => { setTimeSpeed(speed); setIsPaused(false); }}
+                className={`h-5 px-2 text-[9px] font-mono ${
+                  timeSpeed === speed && !isPaused
+                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' 
+                    : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-cyan-400'
+                }`}
+              >
+                {speed}×
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Asteroid Selector */}
         <div className="border border-white/20 bg-black/90 p-2">
           <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
             <Target className="w-3 h-3" /> Track Asteroid
@@ -1018,93 +1088,26 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             </div>
           )}
         </div>
-      </div>
 
-      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-        <Button variant="outline" size="icon" onClick={toggleFullscreen}
-          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-          {isFullscreen ? <Minimize2 className="h-3 w-3 text-white" /> : <Maximize2 className="h-3 w-3 text-white" />}
-        </Button>
-        <Button variant="outline" size="icon" onClick={() => setZoom(0.6)}
-          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-          <RotateCcw className="h-3 w-3 text-white" />
-        </Button>
-        <Button variant="outline" size="icon" onClick={() => setZoom(prev => Math.min(prev + 0.25, maxZoom))} disabled={zoom >= maxZoom}
-          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-          <ZoomIn className="h-3 w-3 text-white" />
-        </Button>
-        <Button variant="outline" size="icon" onClick={() => setZoom(prev => Math.max(prev - 0.25, minZoom))} disabled={zoom <= minZoom}
-          className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-          <ZoomOut className="h-3 w-3 text-white" />
-        </Button>
-        <div className="text-center text-[8px] text-gray-400 mt-0.5">{Math.round(zoom * 100)}%</div>
-      </div>
-
-      <div className="absolute top-2 right-44 z-10 border border-white/20 bg-black/90 p-3 rounded">
-        <p className="text-[8px] text-gray-500 uppercase tracking-wider mb-2">Time Control</p>
-        
-        {/* Main playback controls */}
-        <div className="flex items-center gap-1 mb-2">
-          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(0.25)}
+        {/* Zoom Controls */}
+        <div className="flex flex-col gap-1">
+          <Button variant="outline" size="icon" onClick={toggleFullscreen}
             className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-            <SkipBack className="h-3 w-3 text-white" />
+            {isFullscreen ? <Minimize2 className="h-3 w-3 text-white" /> : <Maximize2 className="h-3 w-3 text-white" />}
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.max(0.25, prev - 0.25))}
+          <Button variant="outline" size="icon" onClick={() => setZoom(0.6)}
             className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-            <Rewind className="h-3 w-3 text-white" />
+            <RotateCcw className="h-3 w-3 text-white" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setIsPaused(!isPaused)}
-            className={`w-8 h-8 border-2 hover:bg-white/10 ${isPaused ? 'border-green-500 bg-green-500/10' : 'border-amber-500 bg-amber-500/10'}`}>
-            {isPaused ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-amber-400" />}
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(prev => Math.min(8, prev + 0.25))}
+          <Button variant="outline" size="icon" onClick={() => setZoom(prev => Math.min(prev + 0.25, maxZoom))} disabled={zoom >= maxZoom}
             className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-            <FastForward className="h-3 w-3 text-white" />
+            <ZoomIn className="h-3 w-3 text-white" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setTimeSpeed(8)}
+          <Button variant="outline" size="icon" onClick={() => setZoom(prev => Math.max(prev - 0.25, minZoom))} disabled={zoom <= minZoom}
             className="w-6 h-6 bg-black/80 border-white/20 hover:bg-white/10 hover:border-cyan-400">
-            <SkipForward className="h-3 w-3 text-white" />
+            <ZoomOut className="h-3 w-3 text-white" />
           </Button>
-        </div>
-
-        {/* Speed indicator */}
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className={`text-sm font-mono font-bold ${isPaused ? 'text-amber-400' : 'text-cyan-400'}`}>
-            {isPaused ? '⏸ PAUSED' : `▶ ${timeSpeed}×`}
-          </span>
-        </div>
-
-        {/* Speed slider */}
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[8px] text-gray-500">0.25×</span>
-          <Slider 
-            value={[timeSpeed]} 
-            onValueChange={(v) => setTimeSpeed(v[0])} 
-            min={0.25} 
-            max={8} 
-            step={0.25} 
-            className="w-20"
-          />
-          <span className="text-[8px] text-gray-500">8×</span>
-        </div>
-
-        {/* Speed presets */}
-        <div className="flex gap-1">
-          {[0.5, 1, 2, 4].map(speed => (
-            <Button 
-              key={speed}
-              variant="outline" 
-              size="sm"
-              onClick={() => { setTimeSpeed(speed); setIsPaused(false); }}
-              className={`h-5 px-2 text-[9px] font-mono ${
-                timeSpeed === speed && !isPaused
-                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' 
-                  : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-cyan-400'
-              }`}
-            >
-              {speed}×
-            </Button>
-          ))}
+          <div className="text-center text-[8px] text-gray-400 mt-0.5">{Math.round(zoom * 100)}%</div>
         </div>
       </div>
 
