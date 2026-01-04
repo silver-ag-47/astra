@@ -248,12 +248,12 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         {/* Made with love credit */}
         <div className="absolute bottom-4 right-6 flex items-center gap-4">
           <a
-            href="https://discord.com/users/xmen0325"
+            href="https://discord.gg/rbecJstsS4"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-mono text-muted-foreground hover:text-accent-cyan transition-colors"
           >
-            Made with <span className="text-accent-red">❤️</span> by Silver
+            Made with <span className="text-accent-red">❤️</span> by Silver and Team ASTRA INFINITY
           </a>
           <ThemeToggle />
         </div>
