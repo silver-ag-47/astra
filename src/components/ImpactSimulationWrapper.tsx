@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid } from '@/data/asteroids';
 import ImpactSimulation from './ImpactSimulation';
+import TexturedEarth from './mission/TexturedEarth';
 
 interface ImpactSimulationWrapperProps {
   asteroid: Asteroid;
@@ -31,8 +32,8 @@ const ImpactSimulationWrapper = ({ asteroid, onImpactComplete }: ImpactSimulatio
     <div className="w-full h-full bg-black">
       <Canvas camera={{ position: [0, 1, 4], fov: 60 }}>
         {/* Lighting */}
-        <ambientLight intensity={0.2} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <ambientLight intensity={0.3} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
         <pointLight position={[-10, -10, -5]} intensity={0.5} color="#ff8866" />
 
         {/* Stars background */}
@@ -44,6 +45,16 @@ const ImpactSimulationWrapper = ({ asteroid, onImpactComplete }: ImpactSimulatio
           <meshBasicMaterial color="#ffdd44" />
         </mesh>
         <pointLight position={[15, 5, -20]} intensity={2} color="#ffdd44" distance={50} />
+
+        {/* Textured Earth */}
+        <Suspense fallback={null}>
+          <TexturedEarth 
+            position={[earthPosition.x, earthPosition.y, earthPosition.z]} 
+            radius={earthRadius}
+            damaged={showDamageAssessment}
+            damageProgress={showDamageAssessment ? 0.5 : 0}
+          />
+        </Suspense>
 
         {/* Impact simulation */}
         <ImpactSimulation
