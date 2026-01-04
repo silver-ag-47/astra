@@ -1,14 +1,15 @@
 import { Asteroid, calculateImpactEnergy } from '@/data/asteroids';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Rocket } from 'lucide-react';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
   onClick: () => void;
   onViewThreat: () => void;
+  onInitiateMission?: () => void;
   isSelected: boolean;
 }
 
-const AsteroidCard = ({ asteroid, onClick, onViewThreat, isSelected }: AsteroidCardProps) => {
+const AsteroidCard = ({ asteroid, onClick, onViewThreat, onInitiateMission, isSelected }: AsteroidCardProps) => {
   const impactEnergy = calculateImpactEnergy(asteroid.mass, asteroid.velocity);
   
   const getTorinoClass = (scale: number) => {
@@ -120,6 +121,20 @@ const AsteroidCard = ({ asteroid, onClick, onViewThreat, isSelected }: AsteroidC
         <AlertTriangle size={12} className="group-hover:text-accent-amber transition-colors" />
         <span className="tracking-wider">VIEW THREAT ASSESSMENT</span>
       </button>
+
+      {/* Initiate Mission Button - only show when selected */}
+      {isSelected && onInitiateMission && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onInitiateMission();
+          }}
+          className="w-full mt-2 pt-3 border-t border-border flex items-center justify-center gap-2 text-xs text-cyan-400 hover:text-cyan-300 transition-colors group"
+        >
+          <Rocket size={12} className="group-hover:text-cyan-300 transition-colors" />
+          <span className="tracking-wider">INITIATE MISSION</span>
+        </button>
+      )}
     </button>
   );
 };
