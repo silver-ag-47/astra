@@ -1562,6 +1562,21 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
                   Compare
                 </Button>
               </div>
+              
+              {/* Overview Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setOverviewMode(!overviewMode)}
+                className={`w-full h-7 mt-2 text-[9px] ${
+                  overviewMode 
+                    ? 'bg-amber-500/30 border-amber-500/60 text-amber-400 hover:bg-amber-500/40' 
+                    : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-amber-400'
+                }`}
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                {overviewMode ? 'Tracking Active' : 'Overview Mode'}
+              </Button>
             </div>
           )}
         </div>
