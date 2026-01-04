@@ -1489,6 +1489,21 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
           
           {selectedAsteroid && (
             <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+              {/* Overview Toggle */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setOverviewMode(!overviewMode)}
+                className={`w-full h-6 text-[9px] mb-2 ${
+                  overviewMode 
+                    ? 'bg-amber-500/30 border-amber-500/60 text-amber-400 hover:bg-amber-500/40' 
+                    : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-amber-400'
+                }`}
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                {overviewMode ? 'TRACKING ACTIVE' : 'ENABLE OVERVIEW'}
+              </Button>
+              
               <div className="flex justify-between text-[8px]">
                 <span className="text-gray-500">Diameter:</span>
                 <span className="text-white font-mono">{selectedAsteroid.diameter}m</span>
@@ -1509,27 +1524,14 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid, customAstero
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setOverviewMode(!overviewMode)}
-                  className={`flex-1 h-6 text-[9px] ${
-                    overviewMode 
-                      ? 'bg-amber-500/30 border-amber-500/60 text-amber-400 hover:bg-amber-500/40' 
-                      : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-amber-400'
-                  }`}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  {overviewMode ? 'Tracking' : 'Overview'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
                   onClick={() => {
                     setOverviewMode(false);
                     onSelectAsteroid(null as any);
                   }}
-                  className="flex-1 h-6 bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-[9px] text-cyan-400"
+                  className="w-full h-6 bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-[9px] text-cyan-400"
                 >
                   <Home className="w-3 h-3 mr-1" />
-                  Reset
+                  Reset View
                 </Button>
               </div>
               
