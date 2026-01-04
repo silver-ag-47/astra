@@ -161,6 +161,18 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
             Initiate Mission →
           </button>
         </div>
+
+        {/* Made with love credit */}
+        <div className="absolute bottom-4 right-6">
+          <a
+            href="https://discord.com/users/xmen0325"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono text-muted-foreground hover:text-accent-cyan transition-colors"
+          >
+            Made with <span className="text-accent-red">❤️</span> by Silver
+          </a>
+        </div>
       </div>
     </div>
   );
