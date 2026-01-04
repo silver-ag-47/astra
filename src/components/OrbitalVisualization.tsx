@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, Sphere, Ring, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { Asteroid, asteroids } from '@/data/asteroids';
-import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play, Pause, Maximize2, Minimize2, RotateCcw, Rewind, FastForward, SkipBack, SkipForward, Target, ChevronDown, Home, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -979,6 +979,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
   const [timeSpeed, setTimeSpeed] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [overviewMode, setOverviewMode] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const minZoom = 0.25;
@@ -1043,7 +1044,7 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
             />
           ))}
           
-          <CameraController zoom={zoom} focusTarget={selectedAsteroid} />
+          <CameraController zoom={zoom} focusTarget={overviewMode ? null : selectedAsteroid} />
         </Suspense>
       </Canvas>
 
@@ -1188,15 +1189,33 @@ const OrbitalVisualization = ({ selectedAsteroid, onSelectAsteroid }: OrbitalVis
                 <span className="text-gray-500">Orbit Period:</span>
                 <span className="text-cyan-400 font-mono">{selectedAsteroid.orbitalPeriod.toFixed(2)} yrs</span>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => onSelectAsteroid(null as any)}
-                className="w-full mt-2 h-6 bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-[9px] text-cyan-400"
-              >
-                <Home className="w-3 h-3 mr-1" />
-                Return to Overview
-              </Button>
+              <div className="flex gap-1 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setOverviewMode(!overviewMode)}
+                  className={`flex-1 h-6 text-[9px] ${
+                    overviewMode 
+                      ? 'bg-amber-500/30 border-amber-500/60 text-amber-400 hover:bg-amber-500/40' 
+                      : 'bg-black/80 border-white/20 text-gray-400 hover:bg-white/10 hover:border-amber-400'
+                  }`}
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  {overviewMode ? 'Tracking' : 'Overview'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setOverviewMode(false);
+                    onSelectAsteroid(null as any);
+                  }}
+                  className="flex-1 h-6 bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 hover:border-cyan-400 text-[9px] text-cyan-400"
+                >
+                  <Home className="w-3 h-3 mr-1" />
+                  Reset
+                </Button>
+              </div>
             </div>
           )}
         </div>
