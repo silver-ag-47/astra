@@ -107,6 +107,11 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
       <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center p-8 transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
         
         {/* About Section - Collapsible */}
+        {/* Theme Toggle - Upper Right */}
+        <div className="absolute top-4 right-6 z-30">
+          <ThemeToggle />
+        </div>
+
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-20">
           <button
             onClick={() => setAboutExpanded(!aboutExpanded)}
@@ -246,7 +251,7 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
         </div>
 
         {/* Made with love credit */}
-        <div className="absolute bottom-4 right-6 flex items-center gap-4">
+        <div className="absolute bottom-4 right-6">
           <a
             href="https://discord.gg/rbecJstsS4"
             target="_blank"
@@ -255,7 +260,6 @@ const LandingPage = ({ onEnter }: LandingPageProps) => {
           >
             Made with <span className="text-accent-red">❤️</span> by Silver and Team ASTRA INFINITY
           </a>
-          <ThemeToggle />
         </div>
       </div>
     </div>
