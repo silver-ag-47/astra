@@ -8,6 +8,7 @@ import { Explosion, LaserBeam, GravityField, TrajectoryLine } from './mission/Mi
 import { Asteroid, DefenseStrategy } from '@/data/asteroids';
 import { useMissionSounds } from '@/hooks/useMissionSounds';
 import TexturedEarth from './mission/TexturedEarth';
+import SimulationTutorial from './SimulationTutorial';
 
 interface MissionOrbitalSimulationProps {
   asteroid: Asteroid;
@@ -483,6 +484,9 @@ export const MissionOrbitalSimulation = ({
   const [distanceToTarget, setDistanceToTarget] = useState(8);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [isMuted, setIsMuted] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem('simulation-tutorial-dismissed');
+  });
   
   const sounds = useMissionSounds();
 
@@ -516,6 +520,15 @@ export const MissionOrbitalSimulation = ({
     if (torinoScale >= 5 && strategy.code !== 'NUKE') prob -= 15;
     return Math.max(20, Math.min(95, prob));
   }, [asteroid, strategy]);
+
+  const handleDismissTutorial = useCallback(() => {
+    setShowTutorial(false);
+  }, []);
+
+  const handleNeverShowTutorial = useCallback(() => {
+    localStorage.setItem('simulation-tutorial-dismissed', 'true');
+    setShowTutorial(false);
+  }, []);
 
   return (
     <div className="relative w-full h-full bg-black">
@@ -556,6 +569,13 @@ export const MissionOrbitalSimulation = ({
         successProbability={successProbability}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+      />
+
+      <SimulationTutorial
+        currentPhase={phase}
+        isFirstTime={showTutorial}
+        onDismiss={handleDismissTutorial}
+        onNeverShowAgain={handleNeverShowTutorial}
       />
     </div>
   );
